@@ -23,7 +23,7 @@ public class LoginController {
     @FXML
     private TextField passwordField;
     @FXML
-    private BorderPane vbox;
+    private BorderPane rootPane;
     @FXML
     private Label errorLabel;
     @FXML
