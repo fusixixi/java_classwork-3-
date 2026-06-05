@@ -27,6 +27,7 @@ import java.util.Optional;
 @RequestMapping("/api/innovationAchievement")
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class InnovationAchievementController {
+    private static final String ROLE_STUDENT = "ROLE_STUDENT";
 
     @Autowired
     private InnovationAchievementService innovationAchievementService;
@@ -47,6 +48,9 @@ public class InnovationAchievementController {
             @RequestParam(required = false) String attachmentPath,
             @RequestBody(required = false) DataRequest dataRequest) {
         try {
+            if (isStudentRole()) {
+                return ResponseUtil.error("学生端仅可查看自己的创新成果");
+            }
             if (dataRequest != null) {
                 if (studentId == null) {
                     studentId = dataRequest.getInteger("studentId");
@@ -98,6 +102,9 @@ public class InnovationAchievementController {
             @RequestParam Integer state,
             @RequestParam(required = false) String comment) {
         try {
+            if (isStudentRole()) {
+                return ResponseUtil.error("学生端仅可查看自己的创新成果");
+            }
             innovationAchievementService.approveAchievement(achievementId, state, comment);
             return ResponseUtil.success("审批成功", null);
         } catch (Exception e) {
@@ -112,6 +119,9 @@ public class InnovationAchievementController {
     @GetMapping("/student/{studentId}")
     public ResponseEntity<?> getStudentAchievements(@PathVariable Integer studentId) {
         try {
+            if (isStudentRole() && !studentId.equals(CommonMethod.getPersonId())) {
+                return ResponseUtil.error("学生端仅可查看自己的创新成果");
+            }
             List<InnovationAchievement> achievements = innovationAchievementService.getStudentAchievements(studentId);
             return ResponseUtil.success("查询成功", achievements);
         } catch (Exception e) {
@@ -126,6 +136,9 @@ public class InnovationAchievementController {
     @GetMapping("/approved/{studentId}")
     public ResponseEntity<?> getApprovedAchievements(@PathVariable Integer studentId) {
         try {
+            if (isStudentRole() && !studentId.equals(CommonMethod.getPersonId())) {
+                return ResponseUtil.error("学生端仅可查看自己的创新成果");
+            }
             List<InnovationAchievement> achievements = innovationAchievementService.getApprovedAchievements(studentId);
             return ResponseUtil.success("查询成功", achievements);
         } catch (Exception e) {
@@ -140,6 +153,9 @@ public class InnovationAchievementController {
     @GetMapping("/pending")
     public ResponseEntity<?> getPendingAchievements() {
         try {
+            if (isStudentRole()) {
+                return ResponseUtil.error("学生端仅可查看自己的创新成果");
+            }
             List<InnovationAchievement> achievements = innovationAchievementService.getPendingAchievements();
             return ResponseUtil.success("查询成功", achievements);
         } catch (Exception e) {
@@ -154,6 +170,9 @@ public class InnovationAchievementController {
     @GetMapping("/all/approved")
     public ResponseEntity<?> getAllApprovedAchievements() {
         try {
+            if (isStudentRole()) {
+                return ResponseUtil.error("学生端仅可查看自己的创新成果");
+            }
             List<InnovationAchievement> achievements = innovationAchievementService.getAllApprovedAchievements();
             return ResponseUtil.success("查询成功", achievements);
         } catch (Exception e) {
@@ -169,6 +188,9 @@ public class InnovationAchievementController {
     public ResponseEntity<?> getAchievementsByCategory(@PathVariable String category) {
         try {
             List<InnovationAchievement> achievements = innovationAchievementService.getAchievementsByCategory(category);
+            if (isStudentRole()) {
+                achievements = achievements.stream().filter(this::isCurrentStudentAchievement).toList();
+            }
             return ResponseUtil.success("查询成功", achievements);
         } catch (Exception e) {
             return ResponseUtil.error("查询失败：" + e.getMessage());
@@ -183,6 +205,9 @@ public class InnovationAchievementController {
     public ResponseEntity<?> searchAchievements(@RequestParam String keyword) {
         try {
             List<InnovationAchievement> achievements = innovationAchievementService.searchAchievements(keyword);
+            if (isStudentRole()) {
+                achievements = achievements.stream().filter(this::isCurrentStudentAchievement).toList();
+            }
             return ResponseUtil.success("查询成功", achievements);
         } catch (Exception e) {
             return ResponseUtil.error("查询失败：" + e.getMessage());
@@ -196,6 +221,9 @@ public class InnovationAchievementController {
     @GetMapping("/count/approved/{studentId}")
     public ResponseEntity<?> countApprovedByStudent(@PathVariable Integer studentId) {
         try {
+            if (isStudentRole() && !studentId.equals(CommonMethod.getPersonId())) {
+                return ResponseUtil.error("学生端仅可查看自己的创新成果");
+            }
             long count = innovationAchievementService.countApprovedByStudent(studentId);
             return ResponseUtil.success("查询成功", count);
         } catch (Exception e) {
@@ -210,6 +238,9 @@ public class InnovationAchievementController {
     @GetMapping("/count/category/{category}")
     public ResponseEntity<?> countByCategory(@PathVariable String category) {
         try {
+            if (isStudentRole()) {
+                return ResponseUtil.error("学生端仅可查看自己的创新成果");
+            }
             long count = innovationAchievementService.countByCategory(category);
             return ResponseUtil.success("查询成功", count);
         } catch (Exception e) {
@@ -225,6 +256,9 @@ public class InnovationAchievementController {
     public ResponseEntity<?> getAchievementDetail(@PathVariable Integer achievementId) {
         try {
             InnovationAchievement achievement = innovationAchievementService.getAchievementDetail(achievementId);
+            if (isStudentRole() && !isCurrentStudentAchievement(achievement)) {
+                return ResponseUtil.error("学生端仅可查看自己的创新成果");
+            }
             return ResponseUtil.success("查询成功", achievement);
         } catch (Exception e) {
             return ResponseUtil.error("查询失败：" + e.getMessage());
@@ -238,6 +272,9 @@ public class InnovationAchievementController {
     @DeleteMapping("/{achievementId}")
     public ResponseEntity<?> deleteAchievement(@PathVariable Integer achievementId) {
         try {
+            if (isStudentRole()) {
+                return ResponseUtil.error("学生端仅可查看自己的创新成果");
+            }
             innovationAchievementService.deleteAchievement(achievementId);
             return ResponseUtil.success("删除成功", null);
         } catch (Exception e) {
@@ -253,6 +290,9 @@ public class InnovationAchievementController {
     public ResponseEntity<?> getAllAchievements() {
         try {
             List<InnovationAchievement> achievements = innovationAchievementService.getAllAchievements();
+            if (isStudentRole()) {
+                achievements = achievements.stream().filter(this::isCurrentStudentAchievement).toList();
+            }
             return ResponseUtil.success("查询成功", achievements);
         } catch (Exception e) {
             return ResponseUtil.error("查询失败：" + e.getMessage());
@@ -268,6 +308,9 @@ public class InnovationAchievementController {
             List<Map<String,Object>> dataList = new ArrayList<>();
             for (InnovationAchievement achievement : achievements) {
                 if (achievement.getStudent() == null || achievement.getStudent().getPerson() == null) {
+                    continue;
+                }
+                if (isStudentRole() && !isCurrentStudentAchievement(achievement)) {
                     continue;
                 }
                 if (studentNum != null && !studentNum.isBlank() && !achievement.getStudent().getPerson().getNum().contains(studentNum)) {
@@ -318,5 +361,16 @@ public class InnovationAchievementController {
             return "已拒绝";
         }
         return state.toString();
+    }
+
+    private boolean isStudentRole() {
+        return ROLE_STUDENT.equals(CommonMethod.getRoleName());
+    }
+
+    private boolean isCurrentStudentAchievement(InnovationAchievement achievement) {
+        return achievement != null
+                && achievement.getStudent() != null
+                && achievement.getStudent().getPersonId() != null
+                && achievement.getStudent().getPersonId().equals(CommonMethod.getPersonId());
     }
 }

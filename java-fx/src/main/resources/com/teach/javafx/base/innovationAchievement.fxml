@@ -72,7 +72,7 @@
                     <Label text="附件:" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
                     <HBox spacing="5" GridPane.columnIndex="3" GridPane.rowIndex="2">
                         <TextField fx:id="attachmentField" HBox.hgrow="ALWAYS"/>
-                        <Button text="上传" onAction="#onUploadButtonClick" style="-fx-padding: 5 15;"/>
+                        <Button fx:id="uploadButton" text="上传" onAction="#onUploadButtonClick" style="-fx-padding: 5 15;"/>
                     </HBox>
 
                     <Label text="成果描述:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
@@ -88,10 +88,10 @@
 
             <!-- 按钮区域 -->
             <HBox spacing="10" style="-fx-padding: 10;">
-                <Button text="新增" onAction="#onAddButtonClick" style="-fx-padding: 8 25;"/>
-                <Button text="保存" onAction="#onSaveButtonClick" style="-fx-padding: 8 25;"/>
-                <Button text="删除" onAction="#onDeleteButtonClick" style="-fx-padding: 8 25;"/>
-                <Button text="审批" onAction="#onApproveButtonClick" style="-fx-padding: 8 25;"/>
+                <Button fx:id="addButton" text="新增" onAction="#onAddButtonClick" style="-fx-padding: 8 25;"/>
+                <Button fx:id="saveButton" text="保存" onAction="#onSaveButtonClick" style="-fx-padding: 8 25;"/>
+                <Button fx:id="deleteButton" text="删除" onAction="#onDeleteButtonClick" style="-fx-padding: 8 25;"/>
+                <Button fx:id="approveButton" text="审批" onAction="#onApproveButtonClick" style="-fx-padding: 8 25;"/>
                 <Button text="导出" onAction="#doExport" style="-fx-padding: 8 25;"/>
             </HBox>
         </VBox>

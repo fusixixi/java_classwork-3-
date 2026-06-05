@@ -272,15 +272,23 @@ public class AttendanceController extends ToolController {
 
     @FXML
     protected void onCheckRateButtonClick() {
-        String studentNum = studentNumField.getText();
-        String courseName = courseNameField.getText();
-        if (studentNum.isEmpty() || courseName.isEmpty()) {
-            MessageDialog.showDialog("请选择学生和课程");
-            return;
-        }
+        Map selected = dataTableView.getSelectionModel().getSelectedItem();
         DataRequest req = new DataRequest();
-        req.add("studentNum", studentNum);
-        req.add("courseName", courseName);
+        Integer studentId = selected == null ? null : CommonMethod.getInteger(selected, "studentId");
+        Integer courseId = selected == null ? null : CommonMethod.getInteger(selected, "courseId");
+        if (studentId != null && courseId != null) {
+            req.add("studentId", studentId);
+            req.add("courseId", courseId);
+        } else {
+            String studentNum = studentNumField.getText();
+            String courseName = courseNameField.getText();
+            if (studentNum.isEmpty() || courseName.isEmpty()) {
+                MessageDialog.showDialog("请选择学生和课程");
+                return;
+            }
+            req.add("studentNum", studentNum);
+            req.add("courseName", courseName);
+        }
         DataResponse res = HttpRequestUtil.request("/api/attendance/rate", req);
         if (isSuccess(res)) {
             Number rate = (Number) res.getData();
