@@ -18,6 +18,8 @@ import com.teach.javafx.request.DataResponse;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -45,6 +47,12 @@ public class MainFrameController {
     protected TabPane contentTabPane;
     @FXML
     private Label systemPrompt;
+    @FXML
+    private Label userNameLabel;
+    @FXML
+    private Label calendarTextLabel;
+    @FXML
+    private javafx.scene.layout.VBox leftWrap;
 
     private ChangePanelHandler handler= null;
 
@@ -188,6 +196,12 @@ public class MainFrameController {
     @FXML
     public void initialize() {
         handler =new ChangePanelHandler();
+        if (AppStore.getJwt() != null && AppStore.getJwt().getUsername() != null) {
+            userNameLabel.setText(AppStore.getJwt().getUsername());
+        } else {
+            userNameLabel.setText("用户");
+        }
+        calendarTextLabel.setText("今天是 " + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy年MM月dd日")));
         DataRequest req= new DataRequest();
         DataResponse res;
         res = HttpRequestUtil.request("/api/base/getDataBaseUserName",req);
@@ -214,11 +228,27 @@ public class MainFrameController {
     protected void logout(){
         FXMLLoader fxmlLoader = new FXMLLoader(MainApplication.class.getResource("base/login-view.fxml"));
         try {
-            Scene scene = new Scene(fxmlLoader.load(), 320, 240);
+            Scene scene = new Scene(fxmlLoader.load(), 520, 480);
             MainApplication.loginStage("Login", scene);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+    @FXML
+    protected void backLogin() {
+        logout();
+    }
+
+    @FXML
+    protected void toggleMenu() {
+        boolean show = !leftWrap.isVisible();
+        leftWrap.setVisible(show);
+        leftWrap.setManaged(show);
+    }
+
+    @FXML
+    protected void showNotification() {
+        MessageDialog.showDialog("当前暂无新通知。");
     }
 
     public  void changeContent(ActionEvent ae) {

@@ -24,6 +24,10 @@
     -fx-min-width: 320px;
 }
 
+.login-card {
+    -fx-spacing: 14;
+}
+
 .auth-title {
     -fx-font-size: 22px;
     -fx-font-weight: 700;
@@ -101,6 +105,15 @@
 
 .auth-button.primary:pressed {
     -fx-background-color: #1d4ed8;
+}
+
+.login-submit {
+    -fx-min-width: 180px;
+}
+
+.login-tip {
+    -fx-font-size: 12px;
+    -fx-text-fill: #64748b;
 }
 
 .auth-button.secondary {
@@ -267,6 +280,92 @@
 
 .main-frame {
     -fx-background-color: #edf2fa;
+}
+
+.modern-main-frame {
+    -fx-background-color: #f1f5fb;
+}
+
+.left-wrap {
+    -fx-background-color: linear-gradient(to bottom, #ffffff, #f8fbff);
+    -fx-background-radius: 14;
+    -fx-border-color: #dbe4f3;
+    -fx-border-radius: 14;
+    -fx-padding: 10;
+}
+
+.left-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 12;
+    -fx-border-color: #dbe4f3;
+    -fx-border-radius: 12;
+    -fx-padding: 12;
+    -fx-spacing: 6;
+}
+
+.left-card-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #1e3a8a;
+}
+
+.left-card-content {
+    -fx-font-size: 13px;
+    -fx-text-fill: #475569;
+}
+
+.right-wrap {
+    -fx-spacing: 10;
+}
+
+.right-top {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 12;
+    -fx-border-color: #dbe4f3;
+    -fx-border-radius: 12;
+    -fx-padding: 10 12;
+}
+
+.top-icon-btn {
+    -fx-background-color: #eef2ff;
+    -fx-background-radius: 10;
+    -fx-text-fill: #1e40af;
+    -fx-min-width: 34;
+    -fx-min-height: 34;
+    -fx-padding: 0;
+}
+
+.top-icon-btn:hover {
+    -fx-background-color: #dbeafe;
+}
+
+.welcome {
+    -fx-font-size: 14px;
+    -fx-text-fill: #475569;
+}
+
+.welcome-name {
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #1e293b;
+}
+
+.logout-btn {
+    -fx-background-color: #fee2e2;
+    -fx-text-fill: #b91c1c;
+    -fx-background-radius: 10;
+    -fx-padding: 8 16;
+}
+
+.logout-btn:hover {
+    -fx-background-color: #fecaca;
+}
+
+.right-main {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 12;
+    -fx-border-color: #dbe4f3;
+    -fx-border-radius: 12;
 }
 
 .left-nav {
