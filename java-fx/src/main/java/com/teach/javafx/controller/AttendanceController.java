@@ -273,29 +273,50 @@ public class AttendanceController extends ToolController {
     @FXML
     protected void onCheckRateButtonClick() {
         Map selected = dataTableView.getSelectionModel().getSelectedItem();
-        DataRequest req = new DataRequest();
-        Integer studentId = selected == null ? null : CommonMethod.getInteger(selected, "studentId");
-        Integer courseId = selected == null ? null : CommonMethod.getInteger(selected, "courseId");
-        if (studentId != null && courseId != null) {
-            req.add("studentId", studentId);
-            req.add("courseId", courseId);
-        } else {
-            String studentNum = studentNumField.getText();
-            String courseName = courseNameField.getText();
-            if (studentNum.isEmpty() || courseName.isEmpty()) {
-                MessageDialog.showDialog("请选择学生和课程");
-                return;
+        String studentNum = selected == null ? studentNumField.getText() : CommonMethod.getString(selected, "studentNum");
+        String courseName = selected == null ? courseNameField.getText() : CommonMethod.getString(selected, "courseName");
+        if (studentNum == null || studentNum.isBlank()) {
+            studentNum = queryStudentNumField.getText();
+        }
+        if (courseName == null || courseName.isBlank()) {
+            courseName = queryCourseNameField.getText();
+        }
+
+        if (studentNum == null || studentNum.isBlank()) {
+            MessageDialog.showDialog("请先查询并选择学生");
+            return;
+        }
+        if (courseName == null || courseName.isBlank()) {
+            MessageDialog.showDialog("请先选择课程");
+            return;
+        }
+
+        int total = 0;
+        int present = 0;
+        for (Object rowObj : dataTableView.getItems()) {
+            Map row = (Map) rowObj;
+            if (!studentNum.equals(CommonMethod.getString(row, "studentNum"))) {
+                continue;
             }
-            req.add("studentNum", studentNum);
-            req.add("courseName", courseName);
+            if (!courseName.equals(CommonMethod.getString(row, "courseName"))) {
+                continue;
+            }
+            total++;
+            String status = CommonMethod.getString(row, "status");
+            String statusName = CommonMethod.getString(row, "statusName");
+            if ("present".equals(status) || "出勤".equals(statusName)) {
+                present++;
+            }
         }
-        DataResponse res = HttpRequestUtil.request("/api/attendance/rate", req);
-        if (isSuccess(res)) {
-            Number rate = (Number) res.getData();
-            attendanceRateField.setText(String.format("%.2f%%", rate.doubleValue()));
-        } else {
-            MessageDialog.showDialog(res.getMsg());
+
+        if (total == 0) {
+            MessageDialog.showDialog("表格中没有该学生该课程的考勤记录");
+            attendanceRateField.setText("");
+            return;
         }
+
+        double rate = present * 100.0 / total;
+        attendanceRateField.setText(String.format("%.2f%%", rate));
     }
 
     public void doNew() {
