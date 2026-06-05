@@ -222,7 +222,7 @@ public class BaseService {
         studentModules.add(createMenuNode("base/attendance", "我的考勤", 0, Collections.emptyList()));
         studentModules.add(createMenuNode("base/innovationAchievement", "我的创新成果", 0, Collections.emptyList()));
         studentModules.add(createMenuNode("student-leave-panel", "我的审批", 0, Collections.emptyList()));
-        studentModules.add(createMenuNode("base/scoreSubmission", "我的成绩提交", 0, Collections.emptyList()));
+        studentModules.add(createMenuNode("score-table-panel", "我的成绩", 0, Collections.emptyList()));
         return new ArrayList<>(List.of(createMenuNode("studentModules", "学生功能", 1, studentModules)));
     }
 
