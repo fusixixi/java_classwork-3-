@@ -66,6 +66,10 @@ public class LoginController {
     @FXML
     protected void onRoleLoginButtonClick() {
         String role = roleComboBox.getValue();
+        if (role == null || role.isBlank()) {
+            roleComboBox.getSelectionModel().selectFirst();
+            role = roleComboBox.getValue();
+        }
         if ("管理员".equals(role)) {
             onAdminLoginButtonClick();
         } else if ("教师".equals(role)) {
