@@ -81,9 +81,9 @@
 
             <!-- 按钮区域 -->
             <HBox spacing="10">
-                <Button text="新增" onAction="#onAddButtonClick"/>
-                <Button text="保存" onAction="#onSaveButtonClick"/>
-                <Button styleClass="secondary-button" text="删除" onAction="#onDeleteButtonClick"/>
+                <Button fx:id="addButton" text="新增" onAction="#onAddButtonClick"/>
+                <Button fx:id="saveButton" text="保存" onAction="#onSaveButtonClick"/>
+                <Button fx:id="deleteButton" styleClass="secondary-button" text="删除" onAction="#onDeleteButtonClick"/>
                 <Button styleClass="secondary-button" text="查看出勤率" onAction="#onCheckRateButtonClick"/>
                 <Button styleClass="secondary-button" text="导出" onAction="#doExport"/>
             </HBox>
