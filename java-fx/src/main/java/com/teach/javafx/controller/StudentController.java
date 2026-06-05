@@ -253,6 +253,7 @@ public class StudentController extends ToolController {
         photoImageView.setFitHeight(100);
         photoImageView.setFitWidth(100);
         photoButton.setGraphic(photoImageView);
+        photoButton.setText("上传照片");
         DataResponse res;
         DataRequest req = new DataRequest();
         req.add("numName", "");
@@ -300,6 +301,7 @@ public class StudentController extends ToolController {
         emailField.setText("");
         phoneField.setText("");
         addressField.setText("");
+        photoImageView.setImage(null);
         // 清除验证状态
         if (validator != null) {
             validator.clearAllValidation();
@@ -573,17 +575,23 @@ public class StudentController extends ToolController {
             ByteArrayInputStream in = new ByteArrayInputStream(bytes);
             Image img = new Image(in);
             photoImageView.setImage(img);
+        } else {
+            photoImageView.setImage(null);
         }
 
     }
 
     @FXML
     public void onPhotoButtonClick(){
+        if (personId == null) {
+            MessageDialog.showDialog("请先保存学生信息后再上传照片");
+            return;
+        }
         FileChooser fileDialog = new FileChooser();
         fileDialog.setTitle("图片上传");
 //        fileDialog.setInitialDirectory(new File("C:/"));
         fileDialog.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("JPG 文件", "*.jpg"));
+                new FileChooser.ExtensionFilter("图片文件", "*.jpg", "*.jpeg", "*.png", "*.bmp"));
         File file = fileDialog.showOpenDialog(null);
         if(file == null)
             return;

@@ -536,6 +536,12 @@ public class BaseService {
     public DataResponse uploadPhotoBlobWeb(Map<String,Object> pars, MultipartFile file) {
         try {
             String personId = CommonMethod.getString(pars, "remoteFile");
+            if (personId == null || personId.isBlank()) {
+                personId = CommonMethod.getString(pars, "personId");
+            }
+            if (personId == null || personId.isBlank()) {
+                return CommonMethod.getReturnMessageError("人员主键不能为空");
+            }
             InputStream in = file.getInputStream();
             int size = (int) file.getSize();
             byte[] data = new byte[size];
