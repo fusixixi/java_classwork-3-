@@ -30,6 +30,8 @@ import java.util.List;
 @Service
 public class StudentService {
     private static final Logger log = LoggerFactory.getLogger(StudentService.class);
+    private static final String ROLE_ADMIN = "ROLE_ADMIN";
+    private static final String ROLE_STUDENT = "ROLE_STUDENT";
     private final PersonRepository personRepository;  //人员数据操作自动注入
     private final StudentRepository studentRepository;  //学生数据操作自动注入
     private final UserRepository userRepository;  //学生数据操作自动注入
@@ -96,6 +98,18 @@ public class StudentService {
 
     public DataResponse getStudentList(DataRequest dataRequest) {
         String numName = dataRequest.getString("numName");
+        if (isStudentRole() && !isAdminRole()) {
+            List<Map<String, Object>> ownList = new ArrayList<>();
+            Optional<Student> selfOp = getCurrentLoginStudent();
+            if (selfOp.isPresent()) {
+                Map<String, Object> self = getMapFromStudent(selfOp.get());
+                if (isBlank(numName) || containsIgnoreCase(CommonMethod.getString(self, "num"), numName)
+                        || containsIgnoreCase(CommonMethod.getString(self, "name"), numName)) {
+                    ownList.add(self);
+                }
+            }
+            return CommonMethod.getReturnData(ownList);
+        }
         List<Map<String,Object>> dataList = getStudentMapList(numName);
         return CommonMethod.getReturnData(dataList);  //按照测试框架规范会送Map的list
     }
@@ -124,6 +138,16 @@ public class StudentService {
 
     public DataResponse getStudentInfo(DataRequest dataRequest) {
         Integer personId = dataRequest.getInteger("personId");
+        if (isStudentRole() && !isAdminRole()) {
+            Optional<Student> selfOp = getCurrentLoginStudent();
+            if (selfOp.isEmpty()) {
+                return CommonMethod.getReturnMessageError("学生不存在！");
+            }
+            if (personId != null && !personId.equals(selfOp.get().getPersonId())) {
+                return CommonMethod.getReturnMessageError("无权限查看其他学生信息");
+            }
+            return CommonMethod.getReturnData(getMapFromStudent(selfOp.get()));
+        }
         Student s = null;
         Optional<Student> op;
         if (personId != null) {
@@ -139,6 +163,21 @@ public class StudentService {
         Integer personId = dataRequest.getInteger("personId");
         Map<String,Object> form = dataRequest.getMap("form"); //参数获取Map对象
         String num = CommonMethod.getString(form, "num");  //Map 获取属性的值
+        boolean studentRoleOnly = isStudentRole() && !isAdminRole();
+        if (studentRoleOnly) {
+            Optional<Student> selfOp = getCurrentLoginStudent();
+            if (selfOp.isEmpty()) {
+                return CommonMethod.getReturnMessageError("学生不存在！");
+            }
+            Student self = selfOp.get();
+            if (personId != null && !personId.equals(self.getPersonId())) {
+                return CommonMethod.getReturnMessageError("无权限修改其他学生信息");
+            }
+            personId = self.getPersonId();
+            if (!isBlank(num) && !num.equals(self.getPerson().getNum())) {
+                return CommonMethod.getReturnMessageError("学生账号不允许修改");
+            }
+        }
         Student s = null;
         Person p;
         User u;
@@ -206,6 +245,33 @@ public class StudentService {
         studentRepository.save(s);  //修改保存学生信息
         systemService.modifyLog(s,isNew);
         return CommonMethod.getReturnData(s.getPersonId());  // 将personId返回前端
+    }
+
+    private boolean isAdminRole() {
+        return ROLE_ADMIN.equals(CommonMethod.getRoleName());
+    }
+
+    private boolean isStudentRole() {
+        return ROLE_STUDENT.equals(CommonMethod.getRoleName());
+    }
+
+    private Optional<Student> getCurrentLoginStudent() {
+        String username = CommonMethod.getUsername();
+        if (isBlank(username)) {
+            return Optional.empty();
+        }
+        return studentRepository.findByPersonNum(username);
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
+    }
+
+    private boolean containsIgnoreCase(String source, String keyword) {
+        if (isBlank(source) || isBlank(keyword)) {
+            return false;
+        }
+        return source.toLowerCase().contains(keyword.trim().toLowerCase());
     }
 
     public List<Map<String,Object>> getStudentScoreList(List<Score> sList) {

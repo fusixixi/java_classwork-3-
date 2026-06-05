@@ -17,6 +17,8 @@ import java.util.*;
 
 @Service
 public class TeacherService {
+    private static final String ROLE_ADMIN = "ROLE_ADMIN";
+    private static final String ROLE_TEACHER = "ROLE_TEACHER";
     private final PersonRepository personRepository;
     private final TeacherRepository teacherRepository;
     private final UserRepository userRepository;
@@ -60,6 +62,18 @@ public class TeacherService {
 
     public DataResponse getTeacherList(DataRequest dataRequest) {
         String numName = dataRequest.getString("numName");
+        if (isTeacherRole() && !isAdminRole()) {
+            List<Map<String, Object>> ownList = new ArrayList<>();
+            Optional<Teacher> selfOp = getCurrentLoginTeacher();
+            if (selfOp.isPresent()) {
+                Map<String, Object> self = getMapFromTeacher(selfOp.get());
+                if (isBlank(numName) || containsIgnoreCase(CommonMethod.getString(self, "num"), numName)
+                        || containsIgnoreCase(CommonMethod.getString(self, "name"), numName)) {
+                    ownList.add(self);
+                }
+            }
+            return CommonMethod.getReturnData(ownList);
+        }
         List<Teacher> tList = teacherRepository.findTeacherListByNumName(numName);
         List<Map<String, Object>> dataList = new ArrayList<>();
         for (Teacher teacher : tList) {
@@ -70,6 +84,16 @@ public class TeacherService {
 
     public DataResponse getTeacherInfo(DataRequest dataRequest) {
         Integer personId = dataRequest.getInteger("personId");
+        if (isTeacherRole() && !isAdminRole()) {
+            Optional<Teacher> selfOp = getCurrentLoginTeacher();
+            if (selfOp.isEmpty()) {
+                return CommonMethod.getReturnMessageError("教师不存在！");
+            }
+            if (personId != null && !personId.equals(selfOp.get().getPersonId())) {
+                return CommonMethod.getReturnMessageError("无权限查看其他教师信息");
+            }
+            return CommonMethod.getReturnData(getMapFromTeacher(selfOp.get()));
+        }
         Optional<Teacher> op = personId == null ? Optional.empty() : teacherRepository.findById(personId);
         return CommonMethod.getReturnData(op.map(this::getMapFromTeacher).orElseGet(HashMap::new));
     }
@@ -98,6 +122,21 @@ public class TeacherService {
         Integer personId = dataRequest.getInteger("personId");
         Map<String, Object> form = dataRequest.getMap("form");
         String num = CommonMethod.getString(form, "num");
+        boolean teacherRoleOnly = isTeacherRole() && !isAdminRole();
+        if (teacherRoleOnly) {
+            Optional<Teacher> selfOp = getCurrentLoginTeacher();
+            if (selfOp.isEmpty()) {
+                return CommonMethod.getReturnMessageError("教师不存在！");
+            }
+            Teacher self = selfOp.get();
+            if (personId != null && !personId.equals(self.getPersonId())) {
+                return CommonMethod.getReturnMessageError("无权限修改其他教师信息");
+            }
+            personId = self.getPersonId();
+            if (!isBlank(num) && !num.equals(self.getPerson().getNum())) {
+                return CommonMethod.getReturnMessageError("教师账号不允许修改");
+            }
+        }
         if (num == null || num.isEmpty()) {
             return CommonMethod.getReturnMessageError("工号不能为空");
         }
@@ -170,5 +209,32 @@ public class TeacherService {
         t.setDegree(CommonMethod.getString(form, "degree"));
         teacherRepository.saveAndFlush(t);
         return CommonMethod.getReturnData(t.getPersonId());
+    }
+
+    private boolean isAdminRole() {
+        return ROLE_ADMIN.equals(CommonMethod.getRoleName());
+    }
+
+    private boolean isTeacherRole() {
+        return ROLE_TEACHER.equals(CommonMethod.getRoleName());
+    }
+
+    private Optional<Teacher> getCurrentLoginTeacher() {
+        String username = CommonMethod.getUsername();
+        if (isBlank(username)) {
+            return Optional.empty();
+        }
+        return teacherRepository.findByPersonNum(username);
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
+    }
+
+    private boolean containsIgnoreCase(String source, String keyword) {
+        if (isBlank(source) || isBlank(keyword)) {
+            return false;
+        }
+        return source.toLowerCase().contains(keyword.trim().toLowerCase());
     }
 }
