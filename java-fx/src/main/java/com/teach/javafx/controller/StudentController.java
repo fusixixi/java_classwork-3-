@@ -572,9 +572,14 @@ public class StudentController extends ToolController {
         req.add("personId", personId+"");  //个人照片显示
         byte[] bytes = HttpRequestUtil.requestByteData("/api/base/getBlobByteData", req);  //从后端person表里读取图片
         if (bytes != null) {
-            ByteArrayInputStream in = new ByteArrayInputStream(bytes);
-            Image img = new Image(in);
-            photoImageView.setImage(img);
+            try {
+                ByteArrayInputStream in = new ByteArrayInputStream(bytes);
+                Image img = new Image(in);
+                photoImageView.setImage(img);
+            } catch (Exception e) {
+                photoImageView.setImage(null);
+                MessageDialog.showDialog("照片加载失败");
+            }
         } else {
             photoImageView.setImage(null);
         }

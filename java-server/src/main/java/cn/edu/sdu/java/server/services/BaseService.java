@@ -568,12 +568,12 @@ public class BaseService {
         }
         File baseDir = new File(attachFolder).getCanonicalFile();
         File targetFile = new File(baseDir, normalized.toString()).getCanonicalFile();
-        if (!targetFile.getPath().startsWith(baseDir.getPath() + File.separator)) {
+        if (!targetFile.toPath().startsWith(baseDir.toPath())) {
             throw new IOException("上传路径非法");
         }
         File parent = targetFile.getParentFile();
-        if (parent != null && !parent.exists()) {
-            parent.mkdirs();
+        if (parent != null && !parent.exists() && !parent.mkdirs()) {
+            throw new IOException("上传目录创建失败");
         }
         return targetFile;
     }

@@ -13,6 +13,8 @@ import java.util.function.Predicate;
  * 提供实时验证和表单提交验证功能
  */
 public class InputValidator {
+    private static final int MIN_PHONE_DIGITS = 7;
+    private static final int MAX_PHONE_DIGITS = 20;
 
     // 错误消息常量
     public static final String MSG_PHONE_INVALID = "请输入有效的联系电话";
@@ -37,7 +39,7 @@ public class InputValidator {
             return false;
         }
         String digitsOnly = normalized.replace("-", "");
-        return digitsOnly.length() >= 7 && digitsOnly.length() <= 20;
+        return digitsOnly.length() >= MIN_PHONE_DIGITS && digitsOnly.length() <= MAX_PHONE_DIGITS;
     }
 
     /**

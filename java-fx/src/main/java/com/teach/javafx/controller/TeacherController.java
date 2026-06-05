@@ -434,9 +434,14 @@ public class TeacherController extends ToolController {
         req.add("personId", personId + "");
         byte[] bytes = HttpRequestUtil.requestByteData("/api/base/getBlobByteData", req);
         if (bytes != null) {
-            ByteArrayInputStream in = new ByteArrayInputStream(bytes);
-            Image img = new Image(in);
-            photoImageView.setImage(img);
+            try {
+                ByteArrayInputStream in = new ByteArrayInputStream(bytes);
+                Image img = new Image(in);
+                photoImageView.setImage(img);
+            } catch (Exception e) {
+                photoImageView.setImage(null);
+                MessageDialog.showDialog("照片加载失败");
+            }
         } else {
             photoImageView.setImage(null);
         }
