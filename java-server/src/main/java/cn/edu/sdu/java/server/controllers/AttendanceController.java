@@ -10,9 +10,15 @@ import cn.edu.sdu.java.server.repositorys.StudentRepository;
 import cn.edu.sdu.java.server.services.AttendanceService;
 import cn.edu.sdu.java.server.util.ResponseUtil;
 import cn.edu.sdu.java.server.util.CommonMethod;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -29,6 +35,7 @@ import java.util.ArrayList;
 @RequestMapping("/api/attendance")
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class AttendanceController {
+    private static final String ROLE_STUDENT = "ROLE_STUDENT";
 
     @Autowired
     private AttendanceService attendanceService;
@@ -50,6 +57,9 @@ public class AttendanceController {
             @RequestParam(required = false) String remark,
             @RequestBody(required = false) DataRequest dataRequest) {
         try {
+            if (isStudentRole()) {
+                return ResponseUtil.error("学生端仅可查看自己的考勤信息，不能修改");
+            }
             if (dataRequest != null) {
                 if (studentId == null) {
                     studentId = dataRequest.getInteger("studentId");
@@ -121,6 +131,9 @@ public class AttendanceController {
             @RequestParam String status,
             @RequestParam(required = false) String remark) {
         try {
+            if (isStudentRole()) {
+                return ResponseUtil.error("学生端仅可查看自己的考勤信息，不能修改");
+            }
             attendanceService.updateAttendanceStatus(attendanceId, status, remark);
             return ResponseUtil.success("更新成功", null);
         } catch (Exception e) {
@@ -167,10 +180,73 @@ public class AttendanceController {
             @PathVariable Integer studentId,
             @PathVariable Integer courseId) {
         try {
+            if (isStudentRole() && !studentId.equals(CommonMethod.getPersonId())) {
+                return ResponseUtil.error("学生端仅可查看自己的考勤信息");
+            }
             double rate = attendanceService.calculateAttendanceRate(studentId, courseId);
             return ResponseUtil.success("查询成功", rate);
         } catch (Exception e) {
             return ResponseUtil.error("查询失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 计算学生在某课程的出勤率（支持前端POST请求）
+     * POST /api/attendance/rate
+     */
+    @PostMapping("/rate")
+    public DataResponse calculateAttendanceRatePost(@RequestBody(required = false) DataRequest dataRequest) {
+        try {
+            if (dataRequest == null) {
+                return CommonMethod.getReturnMessageError("缺少必要参数");
+            }
+            Integer studentId = dataRequest.getInteger("studentId");
+            Integer courseId = dataRequest.getInteger("courseId");
+            if (studentId == null) {
+                String studentNum = dataRequest.getString("studentNum");
+                if (studentNum != null && !studentNum.isEmpty()) {
+                    Optional<Student> student = studentRepository.findByPersonNum(studentNum);
+                    if (student.isPresent()) {
+                        studentId = student.get().getPersonId();
+                    }
+                }
+            }
+            if (courseId == null) {
+                String courseNum = dataRequest.getString("courseNum");
+                if (courseNum != null && !courseNum.isEmpty()) {
+                    Optional<Course> course = courseRepository.findByNum(courseNum);
+                    if (course.isPresent()) {
+                        courseId = course.get().getCourseId();
+                    }
+                }
+            }
+            if (courseId == null) {
+                String courseName = dataRequest.getString("courseName");
+                if (courseName != null && !courseName.isEmpty()) {
+                    List<Course> courseList = courseRepository.findByName(courseName);
+                    if (courseList.size() > 1) {
+                        return CommonMethod.getReturnMessageError("存在同名课程，请改用课程编号");
+                    }
+                    if (courseList.size() == 1) {
+                        courseId = courseList.get(0).getCourseId();
+                    }
+                }
+            }
+            if (isStudentRole()) {
+                Integer currentPersonId = CommonMethod.getPersonId();
+                if (studentId == null) {
+                    studentId = currentPersonId;
+                } else if (!studentId.equals(currentPersonId)) {
+                    return CommonMethod.getReturnMessageError("学生端仅可查看自己的考勤信息");
+                }
+            }
+            if (studentId == null || courseId == null) {
+                return CommonMethod.getReturnMessageError("缺少必要参数");
+            }
+            double rate = attendanceService.calculateAttendanceRate(studentId, courseId);
+            return CommonMethod.getReturnData(rate);
+        } catch (Exception e) {
+            return CommonMethod.getReturnMessageError("查询失败：" + e.getMessage());
         }
     }
 
@@ -225,6 +301,9 @@ public class AttendanceController {
     public ResponseEntity<?> getAttendanceDetail(@PathVariable Integer attendanceId) {
         try {
             Attendance attendance = attendanceService.getAttendanceDetail(attendanceId);
+            if (isStudentRole() && !attendance.getStudent().getPersonId().equals(CommonMethod.getPersonId())) {
+                return ResponseUtil.error("学生端仅可查看自己的考勤信息");
+            }
             return ResponseUtil.success("查询成功", attendance);
         } catch (Exception e) {
             return ResponseUtil.error("查询失败：" + e.getMessage());
@@ -238,6 +317,9 @@ public class AttendanceController {
     @DeleteMapping("/{attendanceId}")
     public ResponseEntity<?> deleteAttendance(@PathVariable Integer attendanceId) {
         try {
+            if (isStudentRole()) {
+                return ResponseUtil.error("学生端仅可查看自己的考勤信息，不能修改");
+            }
             attendanceService.deleteAttendance(attendanceId);
             return ResponseUtil.success("删除成功", null);
         } catch (Exception e) {
@@ -265,10 +347,15 @@ public class AttendanceController {
             String studentNum = dataRequest == null ? null : dataRequest.getString("studentNum");
             String studentName = dataRequest == null ? null : dataRequest.getString("studentName");
             String courseName = dataRequest == null ? null : dataRequest.getString("courseName");
+            Integer currentPersonId = CommonMethod.getPersonId();
+            boolean studentRole = isStudentRole();
             List<Attendance> attendances = attendanceService.getAllAttendance();
             List<Map<String,Object>> dataList = new ArrayList<>();
             for (Attendance attendance : attendances) {
                 if (attendance.getStudent() == null || attendance.getStudent().getPerson() == null || attendance.getCourse() == null) {
+                    continue;
+                }
+                if (studentRole && !attendance.getStudent().getPersonId().equals(currentPersonId)) {
                     continue;
                 }
                 if (studentNum != null && !studentNum.isBlank() && !attendance.getStudent().getPerson().getNum().contains(studentNum)) {
@@ -285,6 +372,79 @@ public class AttendanceController {
             return CommonMethod.getReturnData(dataList);
         } catch (Exception e) {
             return CommonMethod.getReturnMessageError("查询失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 导出考勤记录
+     * POST /api/attendance/export
+     */
+    @PostMapping("/export")
+    public ResponseEntity<StreamingResponseBody> exportAttendance(@RequestBody(required = false) DataRequest dataRequest) {
+        try {
+            String studentNum = dataRequest == null ? null : dataRequest.getString("studentNum");
+            String studentName = dataRequest == null ? null : dataRequest.getString("studentName");
+            String courseName = dataRequest == null ? null : dataRequest.getString("courseName");
+            Integer currentPersonId = CommonMethod.getPersonId();
+            boolean studentRole = isStudentRole();
+
+            List<Attendance> attendances = attendanceService.getAllAttendance();
+            List<Map<String,Object>> dataList = new ArrayList<>();
+            for (Attendance attendance : attendances) {
+                if (attendance.getStudent() == null || attendance.getStudent().getPerson() == null || attendance.getCourse() == null) {
+                    continue;
+                }
+                if (studentRole && !attendance.getStudent().getPersonId().equals(currentPersonId)) {
+                    continue;
+                }
+                if (studentNum != null && !studentNum.isBlank() && !attendance.getStudent().getPerson().getNum().contains(studentNum)) {
+                    continue;
+                }
+                if (studentName != null && !studentName.isBlank() && !attendance.getStudent().getPerson().getName().contains(studentName)) {
+                    continue;
+                }
+                if (courseName != null && !courseName.isBlank() && !attendance.getCourse().getName().contains(courseName)) {
+                    continue;
+                }
+                dataList.add(toAttendanceMap(attendance));
+            }
+
+            Integer[] widths = {8, 12, 12, 16, 14, 10, 24, 20};
+            String[] titles = {"序号", "学生学号", "学生姓名", "课程名称", "考勤日期", "状态", "备注", "记录时间"};
+            XSSFWorkbook wb = new XSSFWorkbook();
+            XSSFCellStyle style = CommonMethod.createCellStyle(wb, 11);
+            XSSFSheet sheet = wb.createSheet("attendance");
+            for (int j = 0; j < widths.length; j++) {
+                sheet.setColumnWidth(j, widths[j] * 256);
+            }
+            XSSFRow row = sheet.createRow(0);
+            XSSFCell[] cell = new XSSFCell[widths.length];
+            for (int j = 0; j < widths.length; j++) {
+                cell[j] = row.createCell(j);
+                cell[j].setCellStyle(style);
+                cell[j].setCellValue(titles[j]);
+            }
+            for (int i = 0; i < dataList.size(); i++) {
+                Map<String,Object> item = dataList.get(i);
+                row = sheet.createRow(i + 1);
+                for (int j = 0; j < widths.length; j++) {
+                    cell[j] = row.createCell(j);
+                    cell[j].setCellStyle(style);
+                }
+                cell[0].setCellValue(i + 1);
+                cell[1].setCellValue(CommonMethod.getString(item, "studentNum"));
+                cell[2].setCellValue(CommonMethod.getString(item, "studentName"));
+                cell[3].setCellValue(CommonMethod.getString(item, "courseName"));
+                cell[4].setCellValue(CommonMethod.getString(item, "attendanceDate"));
+                cell[5].setCellValue(CommonMethod.getString(item, "statusName"));
+                cell[6].setCellValue(CommonMethod.getString(item, "remark"));
+                cell[7].setCellValue(CommonMethod.getString(item, "recordTime"));
+            }
+
+            StreamingResponseBody stream = wb::write;
+            return ResponseEntity.ok().contentType(CommonMethod.exelType).body(stream);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
         }
     }
 
@@ -316,5 +476,9 @@ public class AttendanceController {
             return "请假";
         }
         return status;
+    }
+
+    private boolean isStudentRole() {
+        return ROLE_STUDENT.equals(CommonMethod.getRoleName());
     }
 }

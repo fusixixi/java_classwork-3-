@@ -1,5 +1,6 @@
 package com.teach.javafx.controller;
 
+import com.teach.javafx.AppStore;
 import com.teach.javafx.controller.base.LocalDateStringConverter;
 import com.teach.javafx.controller.base.ToolController;
 import com.teach.javafx.request.*;
@@ -20,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 
 public class AttendanceController extends ToolController {
+    private static final String ROLE_STUDENT = "ROLE_STUDENT";
+
     private boolean isSuccess(DataResponse res) {
         return res != null && (Integer.valueOf(0).equals(res.getCode()) || Integer.valueOf(200).equals(res.getCode()));
     }
@@ -63,6 +66,12 @@ public class AttendanceController extends ToolController {
     private TextField queryStudentNameField;
     @FXML
     private TextField queryCourseNameField;
+    @FXML
+    private Button addButton;
+    @FXML
+    private Button saveButton;
+    @FXML
+    private Button deleteButton;
 
     private Integer attendanceId = null;
     private ArrayList<Map> attendanceList = new ArrayList();
@@ -106,6 +115,32 @@ public class AttendanceController extends ToolController {
         statusComboBox.getItems().addAll(statusList);
 
         attendanceDatePick.setConverter(new LocalDateStringConverter("yyyy-MM-dd"));
+        setupRolePermissions();
+        onQueryButtonClick();
+    }
+
+    private void setupRolePermissions() {
+        boolean studentRole = isStudentRole();
+        if (!studentRole) {
+            return;
+        }
+        addButton.setDisable(true);
+        saveButton.setDisable(true);
+        deleteButton.setDisable(true);
+        studentNumField.setDisable(true);
+        studentNameField.setDisable(true);
+        courseNameField.setDisable(true);
+        attendanceDatePick.setDisable(true);
+        statusComboBox.setDisable(true);
+        remarkField.setDisable(true);
+        queryStudentNumField.setDisable(true);
+        queryStudentNameField.setDisable(true);
+        queryStudentNumField.setText(AppStore.getJwt().getUsername());
+        queryStudentNameField.setText("");
+    }
+
+    private boolean isStudentRole() {
+        return AppStore.getJwt() != null && ROLE_STUDENT.equals(AppStore.getJwt().getRole());
     }
 
     public void clearPanel() {
@@ -164,11 +199,19 @@ public class AttendanceController extends ToolController {
 
     @FXML
     protected void onAddButtonClick() {
+        if (isStudentRole()) {
+            MessageDialog.showDialog("学生端仅可查看自己的考勤信息，不能修改");
+            return;
+        }
         clearPanel();
     }
 
     @FXML
     protected void onDeleteButtonClick() {
+        if (isStudentRole()) {
+            MessageDialog.showDialog("学生端仅可查看自己的考勤信息，不能修改");
+            return;
+        }
         Map form = dataTableView.getSelectionModel().getSelectedItem();
         if (form == null) {
             MessageDialog.showDialog("没有选择，不能删除");
@@ -192,6 +235,10 @@ public class AttendanceController extends ToolController {
 
     @FXML
     protected void onSaveButtonClick() {
+        if (isStudentRole()) {
+            MessageDialog.showDialog("学生端仅可查看自己的考勤信息，不能修改");
+            return;
+        }
         String studentNum = studentNumField.getText();
         String courseName = courseNameField.getText();
         String dateStr = attendanceDatePick.getEditor().getText();
@@ -235,8 +282,8 @@ public class AttendanceController extends ToolController {
         req.add("courseName", courseName);
         DataResponse res = HttpRequestUtil.request("/api/attendance/rate", req);
         if (isSuccess(res)) {
-            Double rate = (Double) res.getData();
-            attendanceRateField.setText(String.format("%.2f%%", rate));
+            Number rate = (Number) res.getData();
+            attendanceRateField.setText(String.format("%.2f%%", rate.doubleValue()));
         } else {
             MessageDialog.showDialog(res.getMsg());
         }
