@@ -9,7 +9,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.BorderPane;
 import java.io.IOException;
 
 /**
@@ -23,7 +23,7 @@ public class LoginController {
     @FXML
     private TextField passwordField;
     @FXML
-    private VBox vbox;
+    private BorderPane vbox;
     @FXML
     private Label errorLabel;
     @FXML
