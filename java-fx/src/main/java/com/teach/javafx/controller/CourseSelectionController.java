@@ -1,5 +1,6 @@
 package com.teach.javafx.controller;
 
+import com.teach.javafx.AppStore;
 import com.teach.javafx.controller.base.ToolController;
 import com.teach.javafx.request.*;
 import com.teach.javafx.util.CommonMethod;
@@ -19,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 
 public class CourseSelectionController extends ToolController {
+    private static final String ROLE_STUDENT = "ROLE_STUDENT";
+
     private boolean isSuccess(DataResponse res) {
         return res != null && (Integer.valueOf(0).equals(res.getCode()) || Integer.valueOf(200).equals(res.getCode()));
     }
@@ -100,6 +103,29 @@ public class CourseSelectionController extends ToolController {
         stateList.add(new OptionItem(2, "2", "已取消"));
         stateList.add(new OptionItem(3, "3", "已完成"));
         stateComboBox.getItems().addAll(stateList);
+        setupRolePermissions();
+        onQueryButtonClick();
+    }
+
+    private void setupRolePermissions() {
+        if (!isStudentRole()) {
+            return;
+        }
+        JwtResponse jwt = AppStore.getJwt();
+        queryStudentNumField.setDisable(true);
+        queryStudentNameField.setDisable(true);
+        queryStudentNumField.setText(jwt.getUsername());
+        queryStudentNameField.setText("");
+        studentNumField.setDisable(true);
+        studentNameField.setDisable(true);
+        creditField.setDisable(true);
+        selectTimeField.setDisable(true);
+        stateComboBox.setDisable(true);
+    }
+
+    private boolean isStudentRole() {
+        JwtResponse jwt = AppStore.getJwt();
+        return jwt != null && ROLE_STUDENT.equals(jwt.getRole());
     }
 
     public void clearPanel() {
@@ -145,6 +171,12 @@ public class CourseSelectionController extends ToolController {
     protected void onQueryButtonClick() {
         String studentNum = queryStudentNumField.getText();
         String studentName = queryStudentNameField.getText();
+        if (isStudentRole()) {
+            studentNum = AppStore.getJwt().getUsername();
+            studentName = "";
+            queryStudentNumField.setText(studentNum);
+            queryStudentNameField.setText("");
+        }
         DataRequest req = new DataRequest();
         req.add("studentNum", studentNum);
         req.add("studentName", studentName);
@@ -158,6 +190,10 @@ public class CourseSelectionController extends ToolController {
     @FXML
     protected void onAddButtonClick() {
         clearPanel();
+        if (isStudentRole()) {
+            studentNumField.setText(AppStore.getJwt().getUsername());
+            studentNameField.setText("");
+        }
     }
 
     @FXML
@@ -186,6 +222,10 @@ public class CourseSelectionController extends ToolController {
     @FXML
     protected void onSaveButtonClick() {
         String studentNum = studentNumField.getText();
+        if (isStudentRole()) {
+            studentNum = AppStore.getJwt().getUsername();
+            studentNumField.setText(studentNum);
+        }
         String courseNum = courseNumField.getText();
         if (studentNum.isEmpty() || courseNum.isEmpty()) {
             MessageDialog.showDialog("学生学号和课程编号不能为空");

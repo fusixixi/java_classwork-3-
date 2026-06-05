@@ -1,5 +1,6 @@
 package com.teach.javafx.controller;
 
+import com.teach.javafx.AppStore;
 import com.teach.javafx.controller.base.LocalDateStringConverter;
 import com.teach.javafx.controller.base.ToolController;
 import com.teach.javafx.request.*;
@@ -20,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 
 public class InnovationAchievementController extends ToolController {
+    private static final String ROLE_STUDENT = "ROLE_STUDENT";
+
     private boolean isSuccess(DataResponse res) {
         return res != null && (Integer.valueOf(0).equals(res.getCode()) || Integer.valueOf(200).equals(res.getCode()));
     }
@@ -65,6 +68,16 @@ public class InnovationAchievementController extends ToolController {
     private TextField queryStudentNumField;
     @FXML
     private TextField queryTitleField;
+    @FXML
+    private Button addButton;
+    @FXML
+    private Button saveButton;
+    @FXML
+    private Button deleteButton;
+    @FXML
+    private Button approveButton;
+    @FXML
+    private Button uploadButton;
 
     private Integer achievementId = null;
     private ArrayList<Map> achievementList = new ArrayList();
@@ -116,6 +129,42 @@ public class InnovationAchievementController extends ToolController {
         stateComboBox.getItems().addAll(stateList);
 
         achievementDatePick.setConverter(new LocalDateStringConverter("yyyy-MM-dd"));
+        setupRolePermissions();
+        onQueryButtonClick();
+    }
+
+    private boolean isStudentRole() {
+        JwtResponse jwt = AppStore.getJwt();
+        return jwt != null && ROLE_STUDENT.equals(jwt.getRole());
+    }
+
+    private void setupRolePermissions() {
+        if (!isStudentRole()) {
+            return;
+        }
+        JwtResponse jwt = AppStore.getJwt();
+        queryStudentNumField.setDisable(true);
+        queryStudentNumField.setText(jwt.getUsername());
+        studentNumField.setDisable(true);
+        studentNameField.setDisable(true);
+        titleField.setDisable(true);
+        descriptionArea.setDisable(true);
+        categoryComboBox.setDisable(true);
+        achievementDatePick.setDisable(true);
+        attachmentField.setDisable(true);
+        stateComboBox.setDisable(true);
+        approvalCommentArea.setDisable(true);
+
+        addButton.setVisible(false);
+        addButton.setManaged(false);
+        saveButton.setVisible(false);
+        saveButton.setManaged(false);
+        deleteButton.setVisible(false);
+        deleteButton.setManaged(false);
+        approveButton.setVisible(false);
+        approveButton.setManaged(false);
+        uploadButton.setVisible(false);
+        uploadButton.setManaged(false);
     }
 
     public void clearPanel() {
@@ -165,6 +214,10 @@ public class InnovationAchievementController extends ToolController {
     protected void onQueryButtonClick() {
         String studentNum = queryStudentNumField.getText();
         String title = queryTitleField.getText();
+        if (isStudentRole()) {
+            studentNum = AppStore.getJwt().getUsername();
+            queryStudentNumField.setText(studentNum);
+        }
         DataRequest req = new DataRequest();
         req.add("studentNum", studentNum);
         req.add("title", title);
@@ -177,11 +230,19 @@ public class InnovationAchievementController extends ToolController {
 
     @FXML
     protected void onAddButtonClick() {
+        if (isStudentRole()) {
+            MessageDialog.showDialog("学生端仅可查看自己的创新成果");
+            return;
+        }
         clearPanel();
     }
 
     @FXML
     protected void onDeleteButtonClick() {
+        if (isStudentRole()) {
+            MessageDialog.showDialog("学生端仅可查看自己的创新成果");
+            return;
+        }
         Map form = dataTableView.getSelectionModel().getSelectedItem();
         if (form == null) {
             MessageDialog.showDialog("没有选择，不能删除");
@@ -205,6 +266,10 @@ public class InnovationAchievementController extends ToolController {
 
     @FXML
     protected void onSaveButtonClick() {
+        if (isStudentRole()) {
+            MessageDialog.showDialog("学生端仅可查看自己的创新成果");
+            return;
+        }
         String studentNum = studentNumField.getText();
         String title = titleField.getText();
         String description = descriptionArea.getText();
@@ -239,6 +304,10 @@ public class InnovationAchievementController extends ToolController {
 
     @FXML
     protected void onUploadButtonClick() {
+        if (isStudentRole()) {
+            MessageDialog.showDialog("学生端仅可查看自己的创新成果");
+            return;
+        }
         FileChooser fileDialog = new FileChooser();
         fileDialog.setTitle("选择附件");
         fileDialog.getExtensionFilters().addAll(
@@ -253,6 +322,10 @@ public class InnovationAchievementController extends ToolController {
 
     @FXML
     protected void onApproveButtonClick() {
+        if (isStudentRole()) {
+            MessageDialog.showDialog("学生端仅可查看自己的创新成果");
+            return;
+        }
         Map form = dataTableView.getSelectionModel().getSelectedItem();
         if (form == null) {
             MessageDialog.showDialog("请选择要审批的成果");

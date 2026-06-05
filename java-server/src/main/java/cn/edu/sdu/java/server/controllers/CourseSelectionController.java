@@ -28,6 +28,7 @@ import java.util.Optional;
 @RequestMapping("/api/courseSelection")
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class CourseSelectionController {
+    private static final String ROLE_STUDENT = "ROLE_STUDENT";
 
     @Autowired
     private CourseSelectionService courseSelectionService;
@@ -72,6 +73,9 @@ public class CourseSelectionController {
                     }
                 }
             }
+            if (isStudentRole()) {
+                studentId = CommonMethod.getPersonId();
+            }
             if (studentId == null || courseId == null) {
                 return ResponseUtil.error("缺少必要参数");
             }
@@ -90,6 +94,10 @@ public class CourseSelectionController {
     @PostMapping("/cancel")
     public ResponseEntity<?> cancelSelection(@RequestParam Integer selectionId) {
         try {
+            CourseSelection selection = courseSelectionService.getSelectionDetail(selectionId);
+            if (isStudentRole() && !isCurrentStudentSelection(selection)) {
+                return ResponseUtil.error("学生端仅可操作自己的选课记录");
+            }
             courseSelectionService.cancelSelection(selectionId);
             return ResponseUtil.success("取消选课成功", null);
         } catch (Exception e) {
@@ -104,6 +112,9 @@ public class CourseSelectionController {
     @GetMapping("/student/{studentId}")
     public ResponseEntity<?> getStudentSelections(@PathVariable Integer studentId) {
         try {
+            if (isStudentRole() && !studentId.equals(CommonMethod.getPersonId())) {
+                return ResponseUtil.error("学生端仅可查看自己的选课记录");
+            }
             List<CourseSelection> selections = courseSelectionService.getStudentSelections(studentId);
             return ResponseUtil.success("查询成功", selections);
         } catch (Exception e) {
@@ -118,6 +129,9 @@ public class CourseSelectionController {
     @GetMapping("/active/{studentId}")
     public ResponseEntity<?> getActiveSelections(@PathVariable Integer studentId) {
         try {
+            if (isStudentRole() && !studentId.equals(CommonMethod.getPersonId())) {
+                return ResponseUtil.error("学生端仅可查看自己的选课记录");
+            }
             List<CourseSelection> selections = courseSelectionService.getActiveSelections(studentId);
             return ResponseUtil.success("查询成功", selections);
         } catch (Exception e) {
@@ -132,6 +146,9 @@ public class CourseSelectionController {
     @GetMapping("/count/{studentId}")
     public ResponseEntity<?> getSelectedCourseCount(@PathVariable Integer studentId) {
         try {
+            if (isStudentRole() && !studentId.equals(CommonMethod.getPersonId())) {
+                return ResponseUtil.error("学生端仅可查看自己的选课记录");
+            }
             long count = courseSelectionService.getSelectedCourseCount(studentId);
             return ResponseUtil.success("查询成功", count);
         } catch (Exception e) {
@@ -161,6 +178,9 @@ public class CourseSelectionController {
     public ResponseEntity<?> getSelectionDetail(@PathVariable Integer selectionId) {
         try {
             CourseSelection selection = courseSelectionService.getSelectionDetail(selectionId);
+            if (isStudentRole() && !isCurrentStudentSelection(selection)) {
+                return ResponseUtil.error("学生端仅可查看自己的选课记录");
+            }
             return ResponseUtil.success("查询成功", selection);
         } catch (Exception e) {
             return ResponseUtil.error("查询失败：" + e.getMessage());
@@ -175,6 +195,10 @@ public class CourseSelectionController {
     @PostMapping("/complete")
     public ResponseEntity<?> completeSelection(@RequestParam Integer selectionId) {
         try {
+            CourseSelection selection = courseSelectionService.getSelectionDetail(selectionId);
+            if (isStudentRole() && !isCurrentStudentSelection(selection)) {
+                return ResponseUtil.error("学生端仅可操作自己的选课记录");
+            }
             courseSelectionService.completeSelection(selectionId);
             return ResponseUtil.success("标记完成成功", null);
         } catch (Exception e) {
@@ -189,6 +213,10 @@ public class CourseSelectionController {
     @DeleteMapping("/{selectionId}")
     public ResponseEntity<?> deleteSelection(@PathVariable Integer selectionId) {
         try {
+            CourseSelection selection = courseSelectionService.getSelectionDetail(selectionId);
+            if (isStudentRole() && !isCurrentStudentSelection(selection)) {
+                return ResponseUtil.error("学生端仅可操作自己的选课记录");
+            }
             courseSelectionService.deleteSelection(selectionId);
             return ResponseUtil.success("删除成功", null);
         } catch (Exception e) {
@@ -204,6 +232,11 @@ public class CourseSelectionController {
     public ResponseEntity<?> getAllSelections() {
         try {
             List<CourseSelection> selections = courseSelectionService.getAllSelections();
+            if (isStudentRole()) {
+                selections = selections.stream()
+                        .filter(this::isCurrentStudentSelection)
+                        .toList();
+            }
             return ResponseUtil.success("查询成功", selections);
         } catch (Exception e) {
             return ResponseUtil.error("查询失败：" + e.getMessage());
@@ -217,8 +250,12 @@ public class CourseSelectionController {
             String studentName = dataRequest == null ? null : dataRequest.getString("studentName");
             List<CourseSelection> selections = courseSelectionService.getAllSelections();
             List<Map<String,Object>> dataList = new ArrayList<>();
+            boolean studentRole = isStudentRole();
             for (CourseSelection selection : selections) {
                 if (selection.getStudent() == null || selection.getStudent().getPerson() == null || selection.getCourse() == null) {
+                    continue;
+                }
+                if (studentRole && !isCurrentStudentSelection(selection)) {
                     continue;
                 }
                 if (studentNum != null && !studentNum.isBlank() && !selection.getStudent().getPerson().getNum().contains(studentNum)) {
@@ -263,5 +300,16 @@ public class CourseSelectionController {
             return "已完成";
         }
         return state.toString();
+    }
+
+    private boolean isStudentRole() {
+        return ROLE_STUDENT.equals(CommonMethod.getRoleName());
+    }
+
+    private boolean isCurrentStudentSelection(CourseSelection selection) {
+        return selection != null
+                && selection.getStudent() != null
+                && selection.getStudent().getPersonId() != null
+                && selection.getStudent().getPersonId().equals(CommonMethod.getPersonId());
     }
 }

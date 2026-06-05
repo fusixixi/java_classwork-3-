@@ -371,6 +371,8 @@ public class AttendanceController {
     private Map<String,Object> toAttendanceMap(Attendance attendance) {
         Map<String,Object> map = new HashMap<>();
         map.put("attendanceId", attendance.getAttendanceId());
+        map.put("studentId", attendance.getStudent().getPersonId());
+        map.put("courseId", attendance.getCourse().getCourseId());
         map.put("studentNum", attendance.getStudent().getPerson().getNum());
         map.put("studentName", attendance.getStudent().getPerson().getName());
         map.put("courseName", attendance.getCourse().getName());
