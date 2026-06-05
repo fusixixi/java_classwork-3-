@@ -1,5 +1,6 @@
 package com.teach.javafx.controller;
 
+import com.teach.javafx.AppStore;
 import com.teach.javafx.MainApplication;
 import com.teach.javafx.controller.base.MessageDialog;
 import com.teach.javafx.request.HttpRequestUtil;
@@ -23,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 
 public class ScoreTableController {
+    private static final String ROLE_STUDENT = "ROLE_STUDENT";
+    private static final String STUDENT_READ_ONLY_MSG = "学生端仅支持查看成绩。";
     @FXML
     private TableView<Map> dataTableView;
     @FXML
@@ -72,9 +75,13 @@ public class ScoreTableController {
         Integer personId = 0;
         Integer courseId = 0;
         OptionItem op;
-        op = studentComboBox.getSelectionModel().getSelectedItem();
-        if(op != null)
-            personId = Integer.parseInt(op.getValue());
+        if (isStudentRole()) {
+            personId = AppStore.getJwt().getId();
+        } else {
+            op = studentComboBox.getSelectionModel().getSelectedItem();
+            if(op != null)
+                personId = Integer.parseInt(op.getValue());
+        }
         op = courseComboBox.getSelectionModel().getSelectedItem();
         if(op != null)
             courseId = Integer.parseInt(op.getValue());
@@ -95,12 +102,16 @@ public class ScoreTableController {
         Button editButton;
         for (int j = 0; j < scoreList.size(); j++) {
             map = scoreList.get(j);
-            editButton = new Button("编辑");
-            editButton.setId("edit"+j);
-            editButton.setOnAction(e->{
-                editItem(((Button)e.getSource()).getId());
-            });
-            map.put("edit",editButton);
+            if (isStudentRole()) {
+                map.remove("edit");
+            } else {
+                editButton = new Button("编辑");
+                editButton.setId("edit"+j);
+                editButton.setOnAction(e->{
+                    editItem(((Button)e.getSource()).getId());
+                });
+                map.put("edit",editButton);
+            }
             observableList.addAll(FXCollections.observableArrayList(map));
         }
         dataTableView.setItems(observableList);
@@ -138,6 +149,11 @@ public class ScoreTableController {
         courseComboBox.getItems().addAll(item);
         courseComboBox.getItems().addAll(courseList);
         dataTableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        if (isStudentRole()) {
+            studentComboBox.getSelectionModel().selectFirst();
+            studentComboBox.setDisable(true);
+            editColumn.setVisible(false);
+        }
         onQueryButtonClick();
     }
 
@@ -194,6 +210,10 @@ public class ScoreTableController {
     }
     @FXML
     private void onAddButtonClick() {
+        if (isStudentRole()) {
+            MessageDialog.showDialog(STUDENT_READ_ONLY_MSG);
+            return;
+        }
         initDialog();
         scoreEditController.showDialog(null);
         MainApplication.setCanClose(false);
@@ -201,6 +221,10 @@ public class ScoreTableController {
     }
     @FXML
     private void onEditButtonClick() {
+        if (isStudentRole()) {
+            MessageDialog.showDialog(STUDENT_READ_ONLY_MSG);
+            return;
+        }
 //        dataTableView.getSelectionModel().getSelectedItems();
         Map data = dataTableView.getSelectionModel().getSelectedItem();
         if(data == null) {
@@ -214,6 +238,10 @@ public class ScoreTableController {
     }
     @FXML
     private void onDeleteButtonClick() {
+        if (isStudentRole()) {
+            MessageDialog.showDialog(STUDENT_READ_ONLY_MSG);
+            return;
+        }
         Map<String,Object> form = dataTableView.getSelectionModel().getSelectedItem();
         if(form == null) {
             MessageDialog.showDialog("没有选择，不能删除");
@@ -235,4 +263,7 @@ public class ScoreTableController {
         }
     }
 
+    private boolean isStudentRole() {
+        return AppStore.getJwt() != null && ROLE_STUDENT.equals(AppStore.getJwt().getRole());
+    }
 }
