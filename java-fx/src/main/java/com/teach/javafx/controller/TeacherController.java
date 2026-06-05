@@ -451,7 +451,7 @@ public class TeacherController extends ToolController {
         FileChooser fileDialog = new FileChooser();
         fileDialog.setTitle("图片上传");
         fileDialog.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("图片文件", "*.jpg", "*.jpeg", "*.png", "*.bmp"));
+                new FileChooser.ExtensionFilter("图片文件", "*.jpg", "*.jpeg", "*.png", "*.bmp", "*.gif", "*.webp"));
         File file = fileDialog.showOpenDialog(null);
         if (file == null) {
             return;

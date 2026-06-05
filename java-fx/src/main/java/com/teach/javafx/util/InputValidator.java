@@ -33,7 +33,7 @@ public class InputValidator {
             return true; // 空值由必填验证处理
         }
         String normalized = phone.trim();
-        if (!normalized.matches("^[0-9-]{7,20}$")) {
+        if (!normalized.matches("^[0-9-]+$")) {
             return false;
         }
         String digitsOnly = normalized.replace("-", "");

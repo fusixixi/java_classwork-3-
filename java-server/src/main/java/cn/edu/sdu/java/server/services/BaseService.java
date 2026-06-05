@@ -28,6 +28,8 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -402,7 +404,8 @@ public class BaseService {
 
     public DataResponse uploadPhoto(byte[] barr,String remoteFile) {
         try {
-            OutputStream os = new FileOutputStream(new File(attachFolder + remoteFile));
+            File targetFile = resolveSafeUploadFile(remoteFile);
+            OutputStream os = new FileOutputStream(targetFile);
             os.write(barr);
             os.close();
             return CommonMethod.getReturnMessageOK();
@@ -519,12 +522,13 @@ public class BaseService {
     public DataResponse uploadPhotoWeb(Map<String,Object> pars, MultipartFile file) {
         try {
             String remoteFile = CommonMethod.getString(pars, "remoteFile");
+            File targetFile = resolveSafeUploadFile(remoteFile);
             InputStream in = file.getInputStream();
             int size = (int) file.getSize();
             byte[] data = new byte[size];
             int len =  in.read(data);
             in.close();
-            OutputStream os = new FileOutputStream(new File(attachFolder + remoteFile));
+            OutputStream os = new FileOutputStream(targetFile);
             os.write(data);
             os.close();
             return CommonMethod.getReturnMessageOK();
@@ -552,6 +556,26 @@ public class BaseService {
             log.error(e.getMessage());
         }
         return CommonMethod.getReturnMessageOK();
+    }
+
+    private File resolveSafeUploadFile(String remoteFile) throws IOException {
+        if (remoteFile == null || remoteFile.isBlank()) {
+            throw new IOException("上传路径不能为空");
+        }
+        Path normalized = Paths.get(remoteFile).normalize();
+        if (normalized.isAbsolute() || normalized.startsWith("..")) {
+            throw new IOException("上传路径非法");
+        }
+        File baseDir = new File(attachFolder).getCanonicalFile();
+        File targetFile = new File(baseDir, normalized.toString()).getCanonicalFile();
+        if (!targetFile.getPath().startsWith(baseDir.getPath() + File.separator)) {
+            throw new IOException("上传路径非法");
+        }
+        File parent = targetFile.getParentFile();
+        if (parent != null && !parent.exists()) {
+            parent.mkdirs();
+        }
+        return targetFile;
     }
 
 }

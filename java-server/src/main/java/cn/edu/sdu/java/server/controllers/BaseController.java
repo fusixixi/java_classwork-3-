@@ -121,17 +121,13 @@ public class BaseController {
 
     @PostMapping("/uploadPhoto")
     public DataResponse uploadPhoto(@RequestBody byte[] barr,
-                                    @RequestParam(name = "remoteFile") String remoteFile,
-                                    @RequestParam(name = "uploader", required = false) String uploader,
-                                    @RequestParam(name = "fileName", required = false) String fileName) {
+                                    @RequestParam(name = "remoteFile") String remoteFile) {
         return baseService.uploadPhoto(barr, remoteFile);
     }
 
     @PostMapping("/uploadPhotoBlob")
     public DataResponse uploadPhotoBlob(@RequestBody byte[] barr,
-                                        @RequestParam(name = "remoteFile") String remoteFile,
-                                        @RequestParam(name = "uploader", required = false) String uploader,
-                                        @RequestParam(name = "fileName", required = false) String fileName) {
+                                        @RequestParam(name = "remoteFile") String remoteFile) {
         return baseService.uploadPhotoBlob(barr, remoteFile);
     }
 

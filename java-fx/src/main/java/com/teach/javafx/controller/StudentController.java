@@ -591,7 +591,7 @@ public class StudentController extends ToolController {
         fileDialog.setTitle("图片上传");
 //        fileDialog.setInitialDirectory(new File("C:/"));
         fileDialog.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("图片文件", "*.jpg", "*.jpeg", "*.png", "*.bmp"));
+                new FileChooser.ExtensionFilter("图片文件", "*.jpg", "*.jpeg", "*.png", "*.bmp", "*.gif", "*.webp"));
         File file = fileDialog.showOpenDialog(null);
         if(file == null)
             return;
