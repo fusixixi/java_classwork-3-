@@ -1,13 +1,20 @@
 package cn.edu.sdu.java.server.controllers;
 
 import cn.edu.sdu.java.server.models.ApprovalWorkflow;
+import cn.edu.sdu.java.server.payload.request.DataRequest;
+import cn.edu.sdu.java.server.payload.response.DataResponse;
 import cn.edu.sdu.java.server.services.ApprovalWorkflowService;
+import cn.edu.sdu.java.server.util.CommonMethod;
 import cn.edu.sdu.java.server.util.ResponseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * ApprovalWorkflowController 审批流程管理控制器
@@ -168,5 +175,71 @@ public class ApprovalWorkflowController {
         } catch (Exception e) {
             return ResponseUtil.error("查询失败：" + e.getMessage());
         }
+    }
+
+    @PostMapping("/all")
+    public DataResponse getAllWorkflowsPost(@RequestBody(required = false) DataRequest dataRequest) {
+        try {
+            String workflowType = dataRequest == null ? null : dataRequest.getString("workflowType");
+            String state = dataRequest == null ? null : dataRequest.getString("state");
+            List<Map<String, Object>> workflows = buildWorkflowDataList(workflowType, state, false);
+            return CommonMethod.getReturnData(workflows);
+        } catch (Exception e) {
+            return CommonMethod.getReturnMessageError("查询失败：" + e.getMessage());
+        }
+    }
+
+    @PostMapping("/pending/all")
+    public DataResponse getPendingWorkflowsPost(@RequestBody(required = false) DataRequest dataRequest) {
+        try {
+            String workflowType = dataRequest == null ? null : dataRequest.getString("workflowType");
+            List<Map<String, Object>> workflows = buildWorkflowDataList(workflowType, "pending", true);
+            return CommonMethod.getReturnData(workflows);
+        } catch (Exception e) {
+            return CommonMethod.getReturnMessageError("查询失败：" + e.getMessage());
+        }
+    }
+
+    @PostMapping("/{workflowId}")
+    public DataResponse getWorkflowDetailPost(@PathVariable Integer workflowId) {
+        try {
+            ApprovalWorkflow workflow = approvalWorkflowService.getWorkflowDetail(workflowId);
+            return CommonMethod.getReturnData(toWorkflowMap(workflow));
+        } catch (Exception e) {
+            return CommonMethod.getReturnMessageError("查询失败：" + e.getMessage());
+        }
+    }
+
+    private List<Map<String, Object>> buildWorkflowDataList(String workflowType, String state, boolean pendingOnly) {
+        String finalState = pendingOnly ? "pending" : state;
+        List<ApprovalWorkflow> workflows = approvalWorkflowService.getWorkflowsForQuery(workflowType, finalState);
+        List<Map<String, Object>> dataList = new ArrayList<>();
+        for (ApprovalWorkflow workflow : workflows) {
+            dataList.add(toWorkflowMap(workflow));
+        }
+        return dataList;
+    }
+
+    private Map<String, Object> toWorkflowMap(ApprovalWorkflow workflow) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("workflowId", workflow.getWorkflowId());
+        map.put("workflowType", workflow.getWorkflowType());
+        map.put("relatedId", workflow.getRelatedId());
+        map.put("applicantId", workflow.getApplicant() == null ? null : workflow.getApplicant().getPersonId());
+        map.put("applicantName", workflow.getApplicant() == null ? "" : workflow.getApplicant().getName());
+        map.put("currentApproverId", workflow.getCurrentApprover() == null ? null : workflow.getCurrentApprover().getPersonId());
+        map.put("currentApproverName", workflow.getCurrentApprover() == null ? "" : workflow.getCurrentApprover().getName());
+        map.put("approvalStep", workflow.getApprovalStep());
+        map.put("totalSteps", workflow.getTotalSteps());
+        map.put("state", workflow.getState());
+        map.put("applyTime", formatDateTime(workflow.getApplyTime()));
+        map.put("approvalTime", formatDateTime(workflow.getApprovalTime()));
+        map.put("approvalComment", workflow.getApprovalComment());
+        map.put("createTime", formatDateTime(workflow.getCreateTime()));
+        return map;
+    }
+
+    private String formatDateTime(LocalDateTime dateTime) {
+        return dateTime == null ? "" : dateTime.toString().replace('T', ' ');
     }
 }

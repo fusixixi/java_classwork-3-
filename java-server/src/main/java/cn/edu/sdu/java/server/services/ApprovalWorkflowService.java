@@ -163,4 +163,22 @@ public class ApprovalWorkflowService {
     public List<ApprovalWorkflow> getWorkflowsByState(String state) {
         return approvalWorkflowRepository.findByState(state);
     }
+
+    /**
+     * 按工作流类型和状态查询审批流程
+     */
+    public List<ApprovalWorkflow> getWorkflowsForQuery(String workflowType, String state) {
+        boolean hasType = workflowType != null && !workflowType.isBlank();
+        boolean hasState = state != null && !state.isBlank();
+        if (hasType && hasState) {
+            return approvalWorkflowRepository.findByWorkflowTypeAndState(workflowType, state);
+        }
+        if (hasType) {
+            return approvalWorkflowRepository.findByWorkflowType(workflowType);
+        }
+        if (hasState) {
+            return approvalWorkflowRepository.findByState(state);
+        }
+        return approvalWorkflowRepository.findAll();
+    }
 }

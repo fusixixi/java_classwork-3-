@@ -22,6 +22,11 @@ public interface ApprovalWorkflowRepository extends JpaRepository<ApprovalWorkfl
     List<ApprovalWorkflow> findByWorkflowType(String workflowType);
 
     /**
+     * 根据工作流类型和状态查询审批流程
+     */
+    List<ApprovalWorkflow> findByWorkflowTypeAndState(String workflowType, String state);
+
+    /**
      * 根据关联ID查询审批流程
      */
     List<ApprovalWorkflow> findByRelatedId(Integer relatedId);
