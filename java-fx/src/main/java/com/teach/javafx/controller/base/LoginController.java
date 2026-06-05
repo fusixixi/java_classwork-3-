@@ -6,6 +6,7 @@ import com.teach.javafx.request.*;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
@@ -25,11 +26,15 @@ public class LoginController {
     private VBox vbox;
     @FXML
     private Label errorLabel;
+    @FXML
+    private ComboBox<String> roleComboBox;
     /**
      * 页面加载对象创建完成初始话方法，页面中控件属性的设置，初始数据显示等初始操作都在这里完成，其他代码都事件处理方法里
      */
     @FXML
     public void initialize() {
+        roleComboBox.getItems().setAll("学生", "教师", "管理员");
+        roleComboBox.getSelectionModel().selectFirst();
         // 添加输入监听器，用户开始输入时清除错误提示
         usernameField.textProperty().addListener((observable, oldValue, newValue) -> {
             if (errorLabel.isVisible()) {
@@ -57,6 +62,17 @@ public class LoginController {
     @FXML
     protected void onTeacherLoginButtonClick() {
         loginByRole("ROLE_TEACHER", "200799013517", "123456");
+    }
+    @FXML
+    protected void onRoleLoginButtonClick() {
+        String role = roleComboBox.getValue();
+        if ("管理员".equals(role)) {
+            onAdminLoginButtonClick();
+        } else if ("教师".equals(role)) {
+            onTeacherLoginButtonClick();
+        } else {
+            onStudentLoginButtonClick();
+        }
     }
 
     private void loginByRole(String expectedRole, String defaultUserName, String defaultPassword) {

@@ -68,12 +68,12 @@ public class MainApplication extends Application {
         stageHeight = mainStage.getHeight();
         mainStage.setTitle(name);
         mainStage.setScene(scene);
-        double x = (stageWidth-320)/2;
-        double y = (stageHeight-240)/2;
+        double x = (stageWidth - 520) / 2;
+        double y = (stageHeight - 480) / 2;
         mainStage.setX(x);
         mainStage.setY(y);
-        mainStage.setWidth(320);
-        mainStage.setHeight(240);
+        mainStage.setWidth(520);
+        mainStage.setHeight(480);
         mainStage.show();
     }
 
