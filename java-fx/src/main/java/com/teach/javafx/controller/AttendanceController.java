@@ -303,8 +303,7 @@ public class AttendanceController extends ToolController {
             }
             total++;
             String status = CommonMethod.getString(row, "status");
-            String statusName = CommonMethod.getString(row, "statusName");
-            if ("present".equals(status) || "出勤".equals(statusName)) {
+            if ("present".equals(status)) {
                 present++;
             }
         }

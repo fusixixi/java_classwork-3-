@@ -211,18 +211,10 @@ public class ApprovalWorkflowController {
     }
 
     private List<Map<String, Object>> buildWorkflowDataList(String workflowType, String state, boolean pendingOnly) {
-        List<ApprovalWorkflow> workflows = pendingOnly
-                ? approvalWorkflowService.getWorkflowsByState("pending")
-                : approvalWorkflowService.getAllWorkflows();
+        String finalState = pendingOnly ? "pending" : state;
+        List<ApprovalWorkflow> workflows = approvalWorkflowService.getWorkflowsForQuery(workflowType, finalState);
         List<Map<String, Object>> dataList = new ArrayList<>();
         for (ApprovalWorkflow workflow : workflows) {
-            if (workflowType != null && !workflowType.isBlank()
-                    && !workflowType.equals(workflow.getWorkflowType())) {
-                continue;
-            }
-            if (state != null && !state.isBlank() && !state.equals(workflow.getState())) {
-                continue;
-            }
             dataList.add(toWorkflowMap(workflow));
         }
         return dataList;
