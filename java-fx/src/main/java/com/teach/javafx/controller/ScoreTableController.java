@@ -25,6 +25,7 @@ import java.util.Map;
 
 public class ScoreTableController {
     private static final String ROLE_STUDENT = "ROLE_STUDENT";
+    private static final String STUDENT_READ_ONLY_MSG = "学生端仅支持查看成绩。";
     @FXML
     private TableView<Map> dataTableView;
     @FXML
@@ -101,13 +102,16 @@ public class ScoreTableController {
         Button editButton;
         for (int j = 0; j < scoreList.size(); j++) {
             map = scoreList.get(j);
-            editButton = new Button(isStudentRole() ? "查看" : "编辑");
-            editButton.setDisable(isStudentRole());
-            editButton.setId("edit"+j);
-            editButton.setOnAction(e->{
-                editItem(((Button)e.getSource()).getId());
-            });
-            map.put("edit",editButton);
+            if (isStudentRole()) {
+                map.remove("edit");
+            } else {
+                editButton = new Button("编辑");
+                editButton.setId("edit"+j);
+                editButton.setOnAction(e->{
+                    editItem(((Button)e.getSource()).getId());
+                });
+                map.put("edit",editButton);
+            }
             observableList.addAll(FXCollections.observableArrayList(map));
         }
         dataTableView.setItems(observableList);
@@ -148,6 +152,7 @@ public class ScoreTableController {
         if (isStudentRole()) {
             studentComboBox.getSelectionModel().selectFirst();
             studentComboBox.setDisable(true);
+            editColumn.setVisible(false);
         }
         onQueryButtonClick();
     }
@@ -206,7 +211,7 @@ public class ScoreTableController {
     @FXML
     private void onAddButtonClick() {
         if (isStudentRole()) {
-            MessageDialog.showDialog("学生端仅支持查看成绩。");
+            MessageDialog.showDialog(STUDENT_READ_ONLY_MSG);
             return;
         }
         initDialog();
@@ -217,7 +222,7 @@ public class ScoreTableController {
     @FXML
     private void onEditButtonClick() {
         if (isStudentRole()) {
-            MessageDialog.showDialog("学生端仅支持查看成绩。");
+            MessageDialog.showDialog(STUDENT_READ_ONLY_MSG);
             return;
         }
 //        dataTableView.getSelectionModel().getSelectedItems();
@@ -234,7 +239,7 @@ public class ScoreTableController {
     @FXML
     private void onDeleteButtonClick() {
         if (isStudentRole()) {
-            MessageDialog.showDialog("学生端仅支持查看成绩。");
+            MessageDialog.showDialog(STUDENT_READ_ONLY_MSG);
             return;
         }
         Map<String,Object> form = dataTableView.getSelectionModel().getSelectedItem();
