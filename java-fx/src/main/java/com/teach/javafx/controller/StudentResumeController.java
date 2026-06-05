@@ -134,7 +134,7 @@ public class StudentResumeController {
 
     private void loadPhoto(Integer personId) {
         DataRequest req = new DataRequest();
-        req.add("personId", personId + "");
+        req.add("personId", String.valueOf(personId));
         byte[] bytes = HttpRequestUtil.requestByteData("/api/base/getBlobByteData", req);
         if (bytes == null || bytes.length == 0) {
             showPlaceholder();

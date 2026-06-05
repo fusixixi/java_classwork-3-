@@ -672,18 +672,12 @@ public class StudentService {
         if (state == null) {
             return "";
         }
-        if (state == 1) {
-            return "待审批";
-        }
-        if (state == 2) {
-            return "审批中";
-        }
-        if (state == 3) {
-            return "已通过";
-        }
-        if (state == 4) {
-            return "已拒绝";
-        }
-        return state.toString();
+        return switch (state) {
+            case 1 -> "待审批";
+            case 2 -> "审批中";
+            case 3 -> "已通过";
+            case 4 -> "已拒绝";
+            default -> state.toString();
+        };
     }
 }
