@@ -15,7 +15,7 @@
 <StackPane stylesheets="@../css/styles.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="com.teach.javafx.controller.base.LoginController">
     <children>
-        <BorderPane fx:id="vbox" styleClass="auth-screen">
+        <BorderPane fx:id="rootPane" styleClass="auth-screen">
             <padding>
                 <Insets bottom="24.0" left="24.0" right="24.0" top="24.0"/>
             </padding>
