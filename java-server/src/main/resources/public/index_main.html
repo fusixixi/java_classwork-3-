@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>山大软院教务平台首页</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:"思源黑体"}
+        :root{
+            --sd-red:#A62424;
+            --sd-dark:#283A53;
+            --sd-blue:#4080FF;
+            --sd-bg:#F8F5EB;
+        }
+        body{display:flex;background:var(--sd-bg);min-height:100vh}
+        /*左侧侧边栏*/
+        .left-wrap{
+            width:260px;background:#fff;display:flex;flex-direction:column;
+            position:fixed;height:100vh;overflow-y:auto;border-right:1px solid #ddd;transition:0.3s;
+        }
+        /*校历模块*/
+        .cal-box{height:35%;padding:12px;border-bottom:1px solid #eee}
+        .cal-title{background:var(--sd-red);color:#fff;padding:8px 10px;border-radius:6px 6px 0 0;text-align:center}
+        .cal-content{border:1px solid #ddd;border-top:none;padding:10px;height:calc(100% - 36px);border-radius:0 0 6px 6px;font-size:13px;color:#555;overflow:auto}
+        .cal-day{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-top:6px}
+        .cal-day span{text-align:center;padding:3px;border-radius:3px}
+        .cal-day .today{background:var(--sd-red);color:#fff}
+        .cal-day .train{background:#cce0ff;color:#0052cc}
+        /*知新楼SVG区域*/
+        .img-box{height:30%;padding:12px;border-bottom:1px solid #eee;display:flex;flex-direction:column;align-items:center;justify-content:center}
+        .img-svg{width:90%;height:70%}
+        .img-txt{margin-top:8px;font-size:13px;color:#333}
+        /*菜单区域*/
+        .menu-box{flex:1;background:var(--sd-dark);padding:10px}
+        .menu-item{color:#eee;margin:4px 0}
+        .menu-top{padding:10px;cursor:pointer;border-radius:4px;transition:0.2s}
+        .menu-top:hover{background:rgba(64,128,255,0.3)}
+        .menu-sub{padding-left:16px;display:none}
+        .menu-sub div{padding:8px 10px;font-size:14px;border-radius:4px;cursor:pointer}
+        .menu-sub div:hover{background:rgba(64,128,255,0.3)}
+        .menu-sub.show{display:block}
+        /*右侧主体*/
+        .right-wrap{flex:1;margin-left:260px}
+        /*顶部导航栏：汉堡+铃铛+欢迎+退出*/
+        .right-top{height:56px;background:#fff;border-bottom:1px solid #ddd;display:flex;align-items:center;justify-content:flex-end;padding:0 20px;gap:24px}
+        .hamburger{display:none;cursor:pointer;font-size:22px}
+        .bell{font-size:20px;cursor:pointer;position:relative}
+        .bell::after{content:"";width:8px;height:8px;background:red;border-radius:50%;position:absolute;top:2px;right:-3px}
+        .welcome{font-size:18px}.welcome span{color:var(--sd-red)}
+        .logout{padding:6px 12px;background:var(--sd-red);color:#fff;border-radius:5px;cursor:pointer;font-size:14px}
+        /*内容卡片*/
+        .right-main{padding:24px}
+        .card{background:#fff;border-radius:8px;padding:20px;margin-bottom:16px;box-shadow:0 1px 8px #ddd}
+        /*移动端*/
+        @media(max-width:768px){
+            .left-wrap{transform:translateX(-100%);z-index:99}
+            .left-wrap.show{transform:translateX(0)}
+            .right-wrap{margin-left:0}
+            .right-top{justify-content:space-between}
+            .hamburger{display:block}
+        }
+        /*图表容器*/
+        #chartBox{width:100%;height:280px;margin-top:10px}
+    </style>
+</head>
+<body>
+    <!--左侧：校历+SVG插画+菜单-->
+    <div class="left-wrap" id="leftBox">
+        <div class="cal-box">
+            <div class="cal-title">山大校历</div>
+            <div class="cal-content" id="calendarDom"></div>
+        </div>
+        <div class="img-box">
+            <!--山东大学知新楼SVG矢量图-->
+            <svg class="img-svg" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20,110 L20,70 L40,70 L40,50 L60,50 L60,30 L100,10 L140,30 L140,50 L160,50 L160,70 L180,70 L180,110 Z" fill="#e8edf3" stroke="#283A53" stroke-width="1.5"/>
+                <rect x="30" y="72" width="12" height="18" fill="#4080FF"/>
+                <rect x="55" y="52" width="12" height="14" fill="#4080FF"/>
+                <rect x="82" y="32" width="16" height="12" fill="#A62424"/>
+                <rect x="130" y="52" width="12" height="14" fill="#4080FF"/>
+                <rect x="155" y="72" width="12" height="18" fill="#4080FF"/>
+                <line x1="20" y1="110" x2="180" y2="110" stroke="#283A53"/>
+            </svg>
+            <div class="img-txt">山东大学·软件学院（知新楼）</div>
+        </div>
+        <div class="menu-box" id="menuContainer"></div>
+    </div>
+
+    <!--右侧页面区-->
+    <div class="right-wrap">
+        <div class="right-top">
+            <div class="hamburger" onclick="toggleMenu()">☰</div>
+            <div class="bell" id="bellBtn">🔔</div>
+            <div class="welcome">欢迎，<span id="userName"></span></div>
+            <div class="logout" onclick="backLogin()">退出登录</div>
+        </div>
+        <div class="right-main" id="mainContent">
+            <!--内容由路由动态渲染-->
+        </div>
+    </div>
+
+<script>
+//1. 获取身份、用户名
+const url=new URL(location.href);
+const role=url.searchParams.get('role')||'student';
+const userName=url.searchParams.get('name')||'用户';
+document.getElementById('userName').innerText=userName;
+
+//2. 菜单配置（固定定稿）
+const menuConfig={
+    student:[
+        {title:"个人信息",sub:[]},
+        {title:"学生功能",sub:["我的选课","我的考勤","我的创新成果","我的审批","我的成绩"]}
+    ],
+    teacher:[
+        {title:"个人信息",sub:[]},
+        {title:"教师功能",sub:["我的教学课程","考勤管理","创新成果管理","审批流程管理","成绩提交管理"]}
+    ],
+    admin:[
+        {title:"个人信息",sub:[]},
+        {title:"系统管理",sub:[]},
+        {title:"人员管理",sub:["学生管理","教师管理"]},
+        {title:"教务管理",sub:["课程管理","成绩管理","选课管理","考勤管理","创新成果管理","审批流程管理","成绩提交审核"]},
+        {title:"示例程序",sub:[]}
+    ]
+}
+
+//3. 页面内容配置（哈希路由key:菜单名,value:页面html）
+const pageConfig = {
+    //首页默认
+    home:`
+    <div class="card">
+        <h3>工作台首页 · 数据仪表盘</h3>
+        <div id="chartBox"><canvas id="dataChart"></canvas></div>
+    </div>
+    <div class="card"><h4>系统公告</h4><p>1.本学期实训申报通道已开放；2.考勤数据每日凌晨自动同步</p ></div>
+    `,
+    "个人信息":`<div class="card"><h3>个人信息</h3><p>姓名：${userName}<br>身份：${role==='student'?'学生':role==='teacher'?'教师':'管理员'}</p ></div>`,
+    "我的选课":`<div class="card"><h3>我的选课</h3><p>已选课程：高等数学、软件工程、Java开发</p ></div>`,
+    "我的考勤":`<div class="card"><h3>我的考勤</h3><p>本月出勤：28天｜缺勤：0天</p ></div>`,
+    "我的创新成果":`<div class="card"><h3>我的创新成果</h3><p>已提交科创项目：软件设计大赛作品1项</p ></div>`,
+    "我的审批":`<div class="card"><h3>我的审批</h3><p>待审批事项：0条</p ></div>`,
+    "我的成绩":`<div class="card"><h3>我的成绩</h3><p>高数：85｜软件工程：92｜Java：88</p ></div>`,
+    "我的教学课程":`<div class="card"><h3>我的授课课程</h3><p>授课：软件工程、数据结构</p ></div>`,
+    "考勤管理":`<div class="card"><h3>考勤管理</h3><p>可查看本班学生出勤、手动补录考勤</p ></div>`,
+    "创新成果管理":`<div class="card"><h3>创新成果管理</h3><p>审核学生科创项目申报材料</p ></div>`,
+    "审批流程管理":`<div class="card"><h3>审批流程管理</h3><p>处理各类学生申请审批</p ></div>`,
+    "成绩提交管理":`<div class="card"><h3>成绩提交管理</h3><p>录入所带课程学生期末成绩</p ></div>`,
+    "系统管理":`<div class="card"><h3>系统管理</h3><p>系统参数配置、日志查看</p ></div>`,
+    "学生管理":`<div class="card"><h3>学生管理</h3><p>新增/编辑/查询全校学生信息</p ></div>`,
+    "教师管理":`<div class="card"><h3>教师管理</h3><p>教职工账号维护、权限分配</p ></div>`,
+    "课程管理":`<div class="card"><h3>课程管理</h3><p>新增课程、课程信息维护</p ></div>`,
+    "成绩管理":`<div class="card"><h3>成绩管理</h3><p>全校成绩汇总、成绩异常处理</p ></div>`,
+    "选课管理":`<div class="card"><h3>选课管理</h3><p>选课周期开关、选课数据统计</p ></div>`,
+    "成绩提交审核":`<div class="card"><h3>成绩提交审核</h3><p>教师提交成绩后台终审</p ></div>`,
+    "示例程序":`<div class="card"><h3>示例程序</h3><p>软院课程示例源码资源页面</p ></div>`
+}
+
+//4. 哈希路由监听，切换内容
+function router(){
+    let hash = location.hash.replace('#','') || 'home';
+    let html = pageConfig[hash]||`<div class="card"><h3>${hash}</h3><p>页面开发中</p ></div>`;
+    document.getElementById('mainContent').innerHTML=html;
+    //渲染图表
+    if(hash==='home') drawChart();
+}
+//监听hash变化
+window.addEventListener('hashchange',router);
+
+//5. 渲染左侧菜单（点击子菜单修改hash跳转页面）
+function renderMenu(){
+    let html='';
+    let list=menuConfig[role];
+    list.forEach(item=>{
+        html+=`<div class="menu-item">
+            <div class="menu-top" onclick="toggleSub(this)">${item.title}</div>
+            <div class="menu-sub">
+                ${item.sub.map(s=>`<div onclick="location.hash='${s}'">${s}</div>`).join('')}
+            </div>
+        </div>`
+    })
+    document.getElementById('menuContainer').innerHTML=html;
+}
+
+//6. 日历生成（JS动态当月日历）
+function buildCalendar(){
+    const now=new Date();
+    const y=now.getFullYear();
+    const m=now.getMonth();
+    const today=now.getDate();
+    const first=new Date(y,m,1);
+    const weekStart=first.getDay();
+    const last=new Date(y,m+1,0);
+    const totalDay=last.getDate();
+    let calHtml=`<div>${y}年${m+1}月</div><div class="cal-day">`;
+    const week=['日','一','二','三','四','五','六'];
+    week.forEach(w=>calHtml+=`<span>${w}</span>`);
+    //空白天数
+    for(let i=0;i<weekStart;i++) calHtml+=`<span></span>`;
+    //日期
+    for(let d=1;d<=totalDay;d++){
+        let cls='';
+        if(d===today) cls='today';
+        //软院实训周标记（每月中下旬模拟）
+        if(d>=16&&d<=18) cls='train';
+        calHtml+=`<span class="${cls}">${d}</span>`;
+    }
+    calHtml+='</div>';
+    document.getElementById('calendarDom').innerHTML=calHtml;
+}
+
+//7. canvas简易柱状数据图表（首页仪表盘）
+function drawChart(){
+    const canvas=document.getElementById('dataChart');
+    if(!canvas) return;
+    const ctx=canvas.getContext('2d');
+    canvas.width=document.getElementById('chartBox').offsetWidth;
+    canvas.height=280;
+    //数据
+    let arr=[32,55,78,45,66,82];
+    let barW=35;
+    let startX=40;
+    arr.forEach((v,i)=>{
+        ctx.fillStyle='#4080FF';
+        ctx.fillRect(startX+i*(barW+20),220-v*2,barW,v*2);
+    })
+    ctx.fillStyle="#333";
+    ctx.fillText("选课/考勤/成绩统计柱状图",20,30);
+}
+
+//8. 菜单展开折叠
+function toggleSub(dom){
+    let sub=dom.nextElementSibling;
+    sub.classList.toggle('show')
+}
+//移动端侧边栏开关
+function toggleMenu(){
+    document.getElementById('leftBox').classList.toggle('show')
+}
+//退出返回登录页
+function backLogin(){
+    location.href='login.html';
+}
+//铃铛弹窗
+document.getElementById('bellBtn').onclick=function(){
+    alert('您有新的系统通知！');
+}
+
+//初始化
+renderMenu();
+buildCalendar();
+router();
+</script>
+</body>
+</html>
