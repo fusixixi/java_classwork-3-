@@ -15,13 +15,19 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.MapValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.stage.FileChooser;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class TeacherController extends ToolController {
+    private ImageView photoImageView;
     @FXML
     private TableView<Map> dataTableView;
     @FXML
@@ -69,6 +75,8 @@ public class TeacherController extends ToolController {
     private TextField passwordField;
     @FXML
     private CheckBox showPasswordCheckBox;
+    @FXML
+    private Button photoButton;
 
     // 验证相关字段
     @FXML
@@ -202,6 +210,11 @@ public class TeacherController extends ToolController {
     public void initialize() {
         // 初始化验证器
         initValidator();
+        photoImageView = new ImageView();
+        photoImageView.setFitHeight(100);
+        photoImageView.setFitWidth(100);
+        photoButton.setGraphic(photoImageView);
+        photoButton.setText("上传照片");
 
         DataRequest req = new DataRequest();
         req.add("numName", "");
@@ -245,6 +258,7 @@ public class TeacherController extends ToolController {
         addressField.setText("");
         titleField.setText("");
         degreeField.setText("");
+        photoImageView.setImage(null);
         // 清除验证状态
         if (validator != null) {
             validator.clearAllValidation();
@@ -278,6 +292,7 @@ public class TeacherController extends ToolController {
         addressField.setText(CommonMethod.getString(form, "address"));
         titleField.setText(CommonMethod.getString(form, "title"));
         degreeField.setText(CommonMethod.getString(form, "degree"));
+        displayPhoto();
     }
 
     public void onTableRowSelect(ListChangeListener.Change<? extends Integer> change) {
@@ -407,6 +422,51 @@ public class TeacherController extends ToolController {
             passwordField.setAccessibleText(passwordField.getText());
         } else {
             // 取消选中时不进行额外处理，用户输入时自动显示
+        }
+    }
+
+    public void displayPhoto() {
+        if (personId == null) {
+            photoImageView.setImage(null);
+            return;
+        }
+        DataRequest req = new DataRequest();
+        req.add("personId", personId + "");
+        byte[] bytes = HttpRequestUtil.requestByteData("/api/base/getBlobByteData", req);
+        if (bytes != null) {
+            try {
+                ByteArrayInputStream in = new ByteArrayInputStream(bytes);
+                Image img = new Image(in);
+                photoImageView.setImage(img);
+            } catch (Exception e) {
+                photoImageView.setImage(null);
+                MessageDialog.showDialog("照片加载失败");
+            }
+        } else {
+            photoImageView.setImage(null);
+        }
+    }
+
+    @FXML
+    public void onPhotoButtonClick() {
+        if (personId == null) {
+            MessageDialog.showDialog("请先保存教师信息后再上传照片");
+            return;
+        }
+        FileChooser fileDialog = new FileChooser();
+        fileDialog.setTitle("图片上传");
+        fileDialog.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("图片文件", "*.jpg", "*.jpeg", "*.png", "*.bmp", "*.gif", "*.webp"));
+        File file = fileDialog.showOpenDialog(null);
+        if (file == null) {
+            return;
+        }
+        DataResponse res = HttpRequestUtil.uploadFile("/api/base/uploadPhotoBlob", file.getPath(), personId + "");
+        if (res.getCode() == 0) {
+            MessageDialog.showDialog("上传成功！");
+            displayPhoto();
+        } else {
+            MessageDialog.showDialog(res.getMsg());
         }
     }
 }

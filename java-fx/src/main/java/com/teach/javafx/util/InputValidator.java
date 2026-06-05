@@ -13,9 +13,11 @@ import java.util.function.Predicate;
  * 提供实时验证和表单提交验证功能
  */
 public class InputValidator {
+    private static final int MIN_PHONE_DIGITS = 7;
+    private static final int MAX_PHONE_DIGITS = 20;
 
     // 错误消息常量
-    public static final String MSG_PHONE_INVALID = "请输入有效的11位手机号码";
+    public static final String MSG_PHONE_INVALID = "请输入有效的联系电话";
     public static final String MSG_STUDENT_ID_EMPTY = "学号不能为空";
     public static final String MSG_PASSWORD_EMPTY = "密码不能为空";
     public static final String MSG_NAME_EMPTY = "姓名不能为空";
@@ -32,7 +34,12 @@ public class InputValidator {
         if (phone == null || phone.isEmpty()) {
             return true; // 空值由必填验证处理
         }
-        return phone.matches("^\\d{11}$");
+        String normalized = phone.trim();
+        if (!normalized.matches("^[0-9-]+$")) {
+            return false;
+        }
+        String digitsOnly = normalized.replace("-", "");
+        return digitsOnly.length() >= MIN_PHONE_DIGITS && digitsOnly.length() <= MAX_PHONE_DIGITS;
     }
 
     /**

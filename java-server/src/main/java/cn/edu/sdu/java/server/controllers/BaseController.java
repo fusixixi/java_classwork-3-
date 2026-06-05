@@ -119,6 +119,18 @@ public class BaseController {
         return baseService.uploadPhotoWeb(pars, file);
     }
 
+    @PostMapping("/uploadPhoto")
+    public DataResponse uploadPhoto(@RequestBody byte[] barr,
+                                    @RequestParam(name = "remoteFile") String remoteFile) {
+        return baseService.uploadPhoto(barr, remoteFile);
+    }
+
+    @PostMapping("/uploadPhotoBlob")
+    public DataResponse uploadPhotoBlob(@RequestBody byte[] barr,
+                                        @RequestParam(name = "remoteFile") String remoteFile) {
+        return baseService.uploadPhotoBlob(barr, remoteFile);
+    }
+
     @PostMapping("/uploadPhotoBlobWeb")
     public DataResponse uploadPhotoBlobWeb(@RequestParam Map<String, Object> pars, @RequestParam("file") MultipartFile file) {
         return baseService.uploadPhotoBlobWeb(pars, file);
