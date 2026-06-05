@@ -18,19 +18,19 @@ public class TeacherController {
     }
 
     @PostMapping("/getTeacherList")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
     public DataResponse getTeacherList(@Valid @RequestBody DataRequest dataRequest) {
         return teacherService.getTeacherList(dataRequest);
     }
 
     @PostMapping("/getTeacherInfo")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
     public DataResponse getTeacherInfo(@Valid @RequestBody DataRequest dataRequest) {
         return teacherService.getTeacherInfo(dataRequest);
     }
 
     @PostMapping("/teacherEditSave")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
     public DataResponse teacherEditSave(@Valid @RequestBody DataRequest dataRequest) {
         return teacherService.teacherEditSave(dataRequest);
     }

@@ -226,6 +226,7 @@ public class BaseService {
 
     private List<Map<String, Object>> buildTeacherMenuList() {
         List<Map<String, Object>> teacherModules = new ArrayList<>();
+        teacherModules.add(createMenuNode("teacher-panel", "个人信息", 0, Collections.emptyList()));
         teacherModules.add(createMenuNode("course-panel", "我的教学课程", 0, Collections.emptyList()));
         teacherModules.add(createMenuNode("base/attendance", "考勤管理", 0, Collections.emptyList()));
         teacherModules.add(createMenuNode("base/innovationAchievement", "创新成果管理", 0, Collections.emptyList()));
