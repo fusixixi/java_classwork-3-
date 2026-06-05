@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.FlowPane?>
+<!-- 用户登录对话框FXML配置文件 对应页面交互控制类 com.teach.javafx.controller.base.LoginController -->
+<StackPane stylesheets="@../css/styles.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.teach.javafx.controller.base.LoginController">
+    <children>
+        <VBox fx:id="vbox" alignment="CENTER" spacing="20.0" styleClass="auth-screen" fillWidth="true">
+            <padding>
+                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+            </padding>
+            <children>
+                <VBox alignment="TOP_CENTER" maxWidth="500.0" minWidth="320.0" prefWidth="480.0" styleClass="auth-card" fillWidth="true">
+                    <children>
+                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="logo-section">
+                            <children>
+                                <ImageView fx:id="imageView" fitHeight="60.0" fitWidth="80.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@../picture/logo.jpg"/>
+                                    </image>
+                                </ImageView>
+                                <VBox spacing="4">
+                                    <children>
+                                        <Label styleClass="auth-title" text="教学管理系统"/>
+                                        <Label styleClass="auth-subtitle" text="请选择您的身份登录"/>
+                                    </children>
+                                </VBox>
+                            </children>
+                        </HBox>
+                        <Separator styleClass="auth-separator"/>
+                        <VBox spacing="16.0" styleClass="form-container">
+                            <children>
+                                <Label fx:id="errorLabel" styleClass="error-label" text="" visible="false"/>
+                                <VBox spacing="6.0" styleClass="form-group">
+                                    <Label styleClass="form-label" text="用户名"/>
+                                    <TextField fx:id="usernameField" promptText="请输入用户名" styleClass="form-input"/>
+                                </VBox>
+                                <VBox spacing="6.0" styleClass="form-group">
+                                    <Label styleClass="form-label" text="密码"/>
+                                    <PasswordField fx:id="passwordField" promptText="请输入密码" styleClass="form-input"/>
+                                </VBox>
+                            </children>
+                        </VBox>
+                        <FlowPane alignment="center" hgap="10" vgap="10" styleClass="button-container">
+                            <children>
+                                <Button onAction="#onAdminLoginButtonClick" text="管理员登录" styleClass="auth-button primary"/>
+                                <Button onAction="#onStudentLoginButtonClick" styleClass="auth-button secondary" text="学生登录"/>
+                                <Button onAction="#onTeacherLoginButtonClick" styleClass="auth-button secondary" text="教师登录"/>
+                            </children>
+                        </FlowPane>
+                    </children>
+                </VBox>
+            </children>
+        </VBox>
+    </children>
+</StackPane>

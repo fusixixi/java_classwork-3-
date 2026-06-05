@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.teach.javafx.controller.ApprovalWorkflowController"
+            maxHeight="-Infinity" maxWidth="-Infinity"
+            minHeight="-Infinity" minWidth="-Infinity">
+
+    <!-- 顶部查询区域 -->
+    <top>
+        <VBox spacing="10" style="-fx-padding: 10;">
+            <Label text="审批流程管理" style="-fx-font-size: 18; -fx-font-weight: bold;"/>
+            <HBox spacing="10">
+                <Label text="工作流类型:" style="-fx-min-width: 100;"/>
+                <ComboBox fx:id="queryTypeComboBox" prefWidth="150"/>
+                <Label text="审批状态:" style="-fx-min-width: 100;"/>
+                <ComboBox fx:id="queryStateComboBox" prefWidth="150"/>
+                <Button text="查询" onAction="#onQueryButtonClick" style="-fx-padding: 5 20;"/>
+                <Button text="待审批" onAction="#onPendingButtonClick" style="-fx-padding: 5 20;"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- 中间表格区域 -->
+    <center>
+        <TableView fx:id="dataTableView" prefHeight="300">
+            <columns>
+                <TableColumn fx:id="workflowIdColumn" text="工作流ID" prefWidth="80"/>
+                <TableColumn fx:id="workflowTypeColumn" text="工作流类型" prefWidth="100"/>
+                <TableColumn fx:id="applicantNameColumn" text="申请人" prefWidth="100"/>
+                <TableColumn fx:id="currentApproverColumn" text="当前审批人" prefWidth="120"/>
+                <TableColumn fx:id="approvalStepColumn" text="审批步骤" prefWidth="80"/>
+                <TableColumn fx:id="stateColumn" text="状态" prefWidth="100"/>
+                <TableColumn fx:id="applyTimeColumn" text="申请时间" prefWidth="120"/>
+            </columns>
+        </TableView>
+    </center>
+
+    <!-- 底部编辑和操作区域 -->
+    <bottom>
+        <VBox spacing="10" style="-fx-padding: 10; -fx-border-color: #ddd; -fx-border-width: 1 0 0 0;">
+            <!-- 编辑信息区域 -->
+            <VBox spacing="8">
+                <Label text="审批流程信息" style="-fx-font-size: 14; -fx-font-weight: bold;"/>
+                <GridPane hgap="10" vgap="8">
+                    <columnConstraints>
+                        <ColumnConstraints prefWidth="100"/>
+                        <ColumnConstraints prefWidth="200"/>
+                        <ColumnConstraints prefWidth="100"/>
+                        <ColumnConstraints prefWidth="200"/>
+                    </columnConstraints>
+
+                    <Label text="工作流ID:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <TextField fx:id="workflowIdField" GridPane.columnIndex="1" GridPane.rowIndex="0" editable="false"/>
+
+                    <Label text="工作流类型:" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                    <ComboBox fx:id="workflowTypeComboBox" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+
+                    <Label text="申请人:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                    <TextField fx:id="applicantNameField" GridPane.columnIndex="1" GridPane.rowIndex="1" editable="false"/>
+
+                    <Label text="当前审批人:" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                    <TextField fx:id="currentApproverField" GridPane.columnIndex="3" GridPane.rowIndex="1" editable="false"/>
+
+                    <Label text="审批步骤:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                    <TextField fx:id="approvalStepField" GridPane.columnIndex="1" GridPane.rowIndex="2" editable="false"/>
+
+                    <Label text="总步骤数:" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
+                    <TextField fx:id="totalStepsField" GridPane.columnIndex="3" GridPane.rowIndex="2" editable="false"/>
+
+                    <Label text="审批状态:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                    <ComboBox fx:id="stateComboBox" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+
+                    <Label text="审批意见:" GridPane.columnIndex="2" GridPane.rowIndex="3"/>
+                    <TextArea fx:id="approvalCommentArea" GridPane.columnIndex="3" GridPane.rowIndex="3" prefRowCount="2"/>
+
+                    <Label text="申请时间:" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+                    <TextField fx:id="applyTimeField" GridPane.columnIndex="1" GridPane.rowIndex="4" editable="false"/>
+
+                    <Label text="审批时间:" GridPane.columnIndex="2" GridPane.rowIndex="4"/>
+                    <TextField fx:id="approvalTimeField" GridPane.columnIndex="3" GridPane.rowIndex="4" editable="false"/>
+                </GridPane>
+            </VBox>
+
+            <!-- 按钮区域 -->
+            <HBox spacing="10" style="-fx-padding: 10;">
+                <Button text="新增" onAction="#doNew" style="-fx-padding: 8 25;"/>
+                <Button text="审批" onAction="#onApproveButtonClick" style="-fx-padding: 8 25;"/>
+                <Button text="导出" onAction="#doExport" style="-fx-padding: 8 25;"/>
+            </HBox>
+        </VBox>
+    </bottom>
+</BorderPane>

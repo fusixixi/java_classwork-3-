@@ -1,0 +1,64 @@
+package cn.edu.sdu.java.server.models;
+
+import jakarta.persistence.*;
+
+import jakarta.validation.constraints.Size;
+
+@Entity
+@Table(	name = "statistics_day",
+        uniqueConstraints = {
+        })
+public class StatisticsDay {
+    @Id
+    @Size(max = 10)
+    private String day;
+    
+    private Integer loginCount;
+    
+    private Integer requestCount;
+    
+    private Integer createCount;
+    
+    private Integer modifyCount;
+
+    // Getters and Setters
+    public String getDay() {
+        return day;
+    }
+
+    public void setDay(String day) {
+        this.day = day;
+    }
+
+    public Integer getLoginCount() {
+        return loginCount;
+    }
+
+    public void setLoginCount(Integer loginCount) {
+        this.loginCount = loginCount;
+    }
+
+    public Integer getRequestCount() {
+        return requestCount;
+    }
+
+    public void setRequestCount(Integer requestCount) {
+        this.requestCount = requestCount;
+    }
+
+    public Integer getCreateCount() {
+        return createCount;
+    }
+
+    public void setCreateCount(Integer createCount) {
+        this.createCount = createCount;
+    }
+
+    public Integer getModifyCount() {
+        return modifyCount;
+    }
+
+    public void setModifyCount(Integer modifyCount) {
+        this.modifyCount = modifyCount;
+    }
+}

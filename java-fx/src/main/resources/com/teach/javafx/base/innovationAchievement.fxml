@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.teach.javafx.controller.InnovationAchievementController"
+            maxHeight="-Infinity" maxWidth="-Infinity"
+            minHeight="-Infinity" minWidth="-Infinity">
+
+    <!-- 顶部查询区域 -->
+    <top>
+        <VBox spacing="10" style="-fx-padding: 10;">
+            <Label text="创新成果管理" style="-fx-font-size: 18; -fx-font-weight: bold;"/>
+            <HBox spacing="10">
+                <Label text="学生学号:" style="-fx-min-width: 80;"/>
+                <TextField fx:id="queryStudentNumField" prefWidth="150"/>
+                <Label text="成果名称:" style="-fx-min-width: 80;"/>
+                <TextField fx:id="queryTitleField" prefWidth="200"/>
+                <Button text="查询" onAction="#onQueryButtonClick" style="-fx-padding: 5 20;"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- 中间表格区域 -->
+    <center>
+        <TableView fx:id="dataTableView" prefHeight="300">
+            <columns>
+                <TableColumn fx:id="achievementIdColumn" text="成果ID" prefWidth="80"/>
+                <TableColumn fx:id="studentNumColumn" text="学生学号" prefWidth="100"/>
+                <TableColumn fx:id="studentNameColumn" text="学生名称" prefWidth="100"/>
+                <TableColumn fx:id="titleColumn" text="成果名称" prefWidth="150"/>
+                <TableColumn fx:id="categoryColumn" text="成果类型" prefWidth="100"/>
+                <TableColumn fx:id="achievementDateColumn" text="完成日期" prefWidth="100"/>
+                <TableColumn fx:id="submitTimeColumn" text="提交时间" prefWidth="120"/>
+                <TableColumn fx:id="stateColumn" text="审批状态" prefWidth="100"/>
+            </columns>
+        </TableView>
+    </center>
+
+    <!-- 底部编辑和操作区域 -->
+    <bottom>
+        <VBox spacing="10" style="-fx-padding: 10; -fx-border-color: #ddd; -fx-border-width: 1 0 0 0;">
+            <!-- 编辑信息区域 -->
+            <VBox spacing="8">
+                <Label text="成果信息" style="-fx-font-size: 14; -fx-font-weight: bold;"/>
+                <GridPane hgap="10" vgap="8">
+                    <columnConstraints>
+                        <ColumnConstraints prefWidth="100"/>
+                        <ColumnConstraints prefWidth="200"/>
+                        <ColumnConstraints prefWidth="100"/>
+                        <ColumnConstraints prefWidth="200"/>
+                    </columnConstraints>
+
+                    <Label text="学生学号:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <TextField fx:id="studentNumField" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+                    <Label text="学生名称:" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                    <TextField fx:id="studentNameField" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+
+                    <Label text="成果名称:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                    <TextField fx:id="titleField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+                    <Label text="成果类型:" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                    <ComboBox fx:id="categoryComboBox" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+
+                    <Label text="完成日期:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                    <DatePicker fx:id="achievementDatePick" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+                    <Label text="附件:" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
+                    <HBox spacing="5" GridPane.columnIndex="3" GridPane.rowIndex="2">
+                        <TextField fx:id="attachmentField" HBox.hgrow="ALWAYS"/>
+                        <Button text="上传" onAction="#onUploadButtonClick" style="-fx-padding: 5 15;"/>
+                    </HBox>
+
+                    <Label text="成果描述:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                    <TextArea fx:id="descriptionArea" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="3" prefRowCount="3"/>
+
+                    <Label text="审批状态:" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+                    <ComboBox fx:id="stateComboBox" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+
+                    <Label text="审批意见:" GridPane.columnIndex="2" GridPane.rowIndex="4"/>
+                    <TextArea fx:id="approvalCommentArea" GridPane.columnIndex="3" GridPane.rowIndex="4" prefRowCount="2"/>
+                </GridPane>
+            </VBox>
+
+            <!-- 按钮区域 -->
+            <HBox spacing="10" style="-fx-padding: 10;">
+                <Button text="新增" onAction="#onAddButtonClick" style="-fx-padding: 8 25;"/>
+                <Button text="保存" onAction="#onSaveButtonClick" style="-fx-padding: 8 25;"/>
+                <Button text="删除" onAction="#onDeleteButtonClick" style="-fx-padding: 8 25;"/>
+                <Button text="审批" onAction="#onApproveButtonClick" style="-fx-padding: 8 25;"/>
+                <Button text="导出" onAction="#doExport" style="-fx-padding: 8 25;"/>
+            </HBox>
+        </VBox>
+    </bottom>
+</BorderPane>

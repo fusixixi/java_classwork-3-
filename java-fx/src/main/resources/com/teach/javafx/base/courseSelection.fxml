@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane stylesheets="@../css/styles.css" xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.teach.javafx.controller.CourseSelectionController"
+            maxHeight="-Infinity" maxWidth="-Infinity"
+            minHeight="-Infinity" minWidth="-Infinity">
+
+    <!-- 顶部查询区域 -->
+    <top>
+        <VBox spacing="10" styleClass="query-panel">
+            <Label styleClass="page-title" text="选课管理"/>
+            <HBox spacing="10">
+                <Label styleClass="query-label" text="学生学号:"/>
+                <TextField fx:id="queryStudentNumField" prefWidth="150"/>
+                <Label styleClass="query-label" text="学生名称:"/>
+                <TextField fx:id="queryStudentNameField" prefWidth="150"/>
+                <Button text="查询" onAction="#onQueryButtonClick"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- 中间表格区域 -->
+    <center>
+        <TableView fx:id="dataTableView" prefHeight="300">
+            <columns>
+                <TableColumn fx:id="selectionIdColumn" text="选课ID" prefWidth="80"/>
+                <TableColumn fx:id="studentNumColumn" text="学生学号" prefWidth="100"/>
+                <TableColumn fx:id="studentNameColumn" text="学生名称" prefWidth="100"/>
+                <TableColumn fx:id="courseNumColumn" text="课程编号" prefWidth="100"/>
+                <TableColumn fx:id="courseNameColumn" text="课程名称" prefWidth="120"/>
+                <TableColumn fx:id="creditColumn" text="学分" prefWidth="60"/>
+                <TableColumn fx:id="selectTimeColumn" text="选课时间" prefWidth="120"/>
+                <TableColumn fx:id="stateColumn" text="状态" prefWidth="80"/>
+            </columns>
+        </TableView>
+    </center>
+
+    <!-- 底部编辑和操作区域 -->
+    <bottom>
+        <VBox spacing="10" styleClass="form-panel">
+            <!-- 编辑信息区域 -->
+            <VBox spacing="8">
+                <Label styleClass="section-title" text="选课信息"/>
+                <GridPane hgap="10" vgap="8">
+                    <columnConstraints>
+                        <ColumnConstraints prefWidth="100"/>
+                        <ColumnConstraints prefWidth="200"/>
+                        <ColumnConstraints prefWidth="100"/>
+                        <ColumnConstraints prefWidth="200"/>
+                    </columnConstraints>
+
+                    <Label text="学生学号:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <TextField fx:id="studentNumField" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+                    <Label text="学生名称:" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                    <TextField fx:id="studentNameField" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+
+                    <Label text="课程编号:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                    <TextField fx:id="courseNumField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+                    <Label text="课程名称:" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                    <TextField fx:id="courseNameField" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+
+                    <Label text="学分:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                    <TextField fx:id="creditField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+                    <Label text="选课时间:" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
+                    <TextField fx:id="selectTimeField" GridPane.columnIndex="3" GridPane.rowIndex="2"/>
+
+                    <Label text="状态:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                    <ComboBox fx:id="stateComboBox" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                </GridPane>
+            </VBox>
+
+            <!-- 按钮区域 -->
+            <HBox spacing="10">
+                <Button text="新增" onAction="#onAddButtonClick"/>
+                <Button text="保存" onAction="#onSaveButtonClick"/>
+                <Button styleClass="secondary-button" text="取消选课" onAction="#onDeleteButtonClick"/>
+                <Button styleClass="secondary-button" text="导出" onAction="#doExport"/>
+            </HBox>
+        </VBox>
+    </bottom>
+</BorderPane>

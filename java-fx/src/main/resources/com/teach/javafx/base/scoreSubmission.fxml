@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.teach.javafx.controller.ScoreSubmissionController"
+            maxHeight="-Infinity" maxWidth="-Infinity"
+            minHeight="-Infinity" minWidth="-Infinity">
+
+    <!-- 顶部查询区域 -->
+    <top>
+        <VBox spacing="10" style="-fx-padding: 10;">
+            <Label text="成绩提交审核" style="-fx-font-size: 18; -fx-font-weight: bold;"/>
+            <HBox spacing="10">
+                <Label text="教师名称:" style="-fx-min-width: 100;"/>
+                <TextField fx:id="queryTeacherNameField" prefWidth="150"/>
+                <Label text="学生学号:" style="-fx-min-width: 100;"/>
+                <TextField fx:id="queryStudentNumField" prefWidth="150"/>
+                <Label text="审批状态:" style="-fx-min-width: 100;"/>
+                <ComboBox fx:id="queryStateComboBox" prefWidth="150"/>
+                <Button text="查询" onAction="#onQueryButtonClick" style="-fx-padding: 5 20;"/>
+                <Button text="待审批" onAction="#onPendingButtonClick" style="-fx-padding: 5 20;"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- 中间表格区域 -->
+    <center>
+        <TableView fx:id="dataTableView" prefHeight="300">
+            <columns>
+                <TableColumn fx:id="submissionIdColumn" text="提交ID" prefWidth="80"/>
+                <TableColumn fx:id="teacherNameColumn" text="教师名称" prefWidth="100"/>
+                <TableColumn fx:id="studentNumColumn" text="学生学号" prefWidth="100"/>
+                <TableColumn fx:id="studentNameColumn" text="学生名称" prefWidth="100"/>
+                <TableColumn fx:id="courseNameColumn" text="课程名称" prefWidth="120"/>
+                <TableColumn fx:id="submittedScoreColumn" text="提交分数" prefWidth="80"/>
+                <TableColumn fx:id="stateColumn" text="审批状态" prefWidth="100"/>
+                <TableColumn fx:id="submissionTimeColumn" text="提交时间" prefWidth="120"/>
+            </columns>
+        </TableView>
+    </center>
+
+    <!-- 底部编辑和操作区域 -->
+    <bottom>
+        <VBox spacing="10" style="-fx-padding: 10; -fx-border-color: #ddd; -fx-border-width: 1 0 0 0;">
+            <!-- 编辑信息区域 -->
+            <VBox spacing="8">
+                <Label text="成绩提交信息" style="-fx-font-size: 14; -fx-font-weight: bold;"/>
+                <GridPane hgap="10" vgap="8">
+                    <columnConstraints>
+                        <ColumnConstraints prefWidth="100"/>
+                        <ColumnConstraints prefWidth="200"/>
+                        <ColumnConstraints prefWidth="100"/>
+                        <ColumnConstraints prefWidth="200"/>
+                    </columnConstraints>
+
+                    <Label text="教师名称:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <TextField fx:id="teacherNameField" GridPane.columnIndex="1" GridPane.rowIndex="0" editable="false"/>
+
+                    <Label text="学生学号:" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                    <TextField fx:id="studentNumField" GridPane.columnIndex="3" GridPane.rowIndex="0" editable="false"/>
+
+                    <Label text="学生名称:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                    <TextField fx:id="studentNameField" GridPane.columnIndex="1" GridPane.rowIndex="1" editable="false"/>
+
+                    <Label text="课程名称:" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                    <TextField fx:id="courseNameField" GridPane.columnIndex="3" GridPane.rowIndex="1" editable="false"/>
+
+                    <Label text="提交分数:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                    <TextField fx:id="submittedScoreField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+                    <Label text="审批状态:" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
+                    <ComboBox fx:id="stateComboBox" GridPane.columnIndex="3" GridPane.rowIndex="2"/>
+
+                    <Label text="审批意见:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                    <TextArea fx:id="approvalCommentArea" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="3" prefRowCount="2"/>
+
+                    <Label text="提交时间:" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+                    <TextField fx:id="submissionTimeField" GridPane.columnIndex="1" GridPane.rowIndex="4" editable="false"/>
+
+                    <Label text="审批时间:" GridPane.columnIndex="2" GridPane.rowIndex="4"/>
+                    <TextField fx:id="approvalTimeField" GridPane.columnIndex="3" GridPane.rowIndex="4" editable="false"/>
+                </GridPane>
+            </VBox>
+
+            <!-- 按钮区域 -->
+            <HBox spacing="10" style="-fx-padding: 10;">
+                <Button text="新增" onAction="#doNew" style="-fx-padding: 8 25;"/>
+                <Button text="审批" onAction="#onApproveButtonClick" style="-fx-padding: 8 25;"/>
+                <Button text="发布" onAction="#onPublishButtonClick" style="-fx-padding: 8 25;"/>
+                <Button text="导出" onAction="#doExport" style="-fx-padding: 8 25;"/>
+            </HBox>
+        </VBox>
+    </bottom>
+</BorderPane>
