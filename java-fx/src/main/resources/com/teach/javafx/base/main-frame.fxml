@@ -34,6 +34,7 @@
                   </VBox>
                   <VBox styleClass="left-card menu-box" VBox.vgrow="ALWAYS">
                      <children>
+                        <Button fx:id="resumeButton" mnemonicParsing="false" onAction="#onResumeButtonClick" text="我的简历" styleClass="button"/>
                         <Label styleClass="left-card-title" text="功能菜单"/>
                         <TreeView fx:id="menuTree" styleClass="left-nav" VBox.vgrow="ALWAYS"/>
                      </children>

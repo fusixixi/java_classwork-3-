@@ -52,6 +52,8 @@ public class MainFrameController {
     @FXML
     private Label calendarTextLabel;
     @FXML
+    private Button resumeButton;
+    @FXML
     private javafx.scene.layout.VBox leftWrap;
 
     private ChangePanelHandler handler= null;
@@ -201,6 +203,11 @@ public class MainFrameController {
         } else {
             userNameLabel.setText("用户");
         }
+        boolean studentRole = AppStore.getJwt() != null && "ROLE_STUDENT".equals(AppStore.getJwt().getRole());
+        if (resumeButton != null) {
+            resumeButton.setVisible(studentRole);
+            resumeButton.setManaged(studentRole);
+        }
         calendarTextLabel.setText("今天是 " + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy年MM月dd日")));
         DataRequest req= new DataRequest();
         DataResponse res;
@@ -249,6 +256,11 @@ public class MainFrameController {
     @FXML
     protected void showNotification() {
         MessageDialog.showDialog("当前暂无新通知。");
+    }
+
+    @FXML
+    protected void onResumeButtonClick() {
+        changeContent("student-resume-panel", "我的简历");
     }
 
     public  void changeContent(ActionEvent ae) {

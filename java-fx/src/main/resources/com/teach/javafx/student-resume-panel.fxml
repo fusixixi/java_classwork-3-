@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.teach.javafx.controller.StudentResumeController" styleClass="resume-root">
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="16.0" styleClass="resume-header">
+            <children>
+                <VBox spacing="6.0">
+                    <children>
+                        <Label text="我的简历" styleClass="resume-title"/>
+                        <Label fx:id="studentNameLabel" styleClass="resume-subtitle"/>
+                        <Label fx:id="studentNumLabel" styleClass="resume-subtitle"/>
+                        <Label fx:id="studentClassLabel" styleClass="resume-subtitle"/>
+                    </children>
+                </VBox>
+                <Region HBox.hgrow="ALWAYS"/>
+                <StackPane prefHeight="120.0" prefWidth="120.0" maxHeight="120.0" maxWidth="120.0">
+                    <children>
+                        <StackPane fx:id="photoPlaceholderPane" styleClass="resume-photo-placeholder"/>
+                        <ImageView fx:id="photoImageView" fitHeight="120.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="false"/>
+                    </children>
+                </StackPane>
+            </children>
+            <padding>
+                <Insets top="12.0" right="12.0" bottom="12.0" left="12.0"/>
+            </padding>
+        </HBox>
+    </top>
+    <center>
+        <TextArea fx:id="resumeTextArea" editable="false" wrapText="true" styleClass="resume-text" BorderPane.alignment="CENTER"/>
+    </center>
+    <padding>
+        <Insets top="8.0" right="8.0" bottom="8.0" left="8.0"/>
+    </padding>
+</BorderPane>

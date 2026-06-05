@@ -153,4 +153,10 @@ public class StudentController {
     public DataResponse getStudentIntroduceData(@Valid @RequestBody DataRequest dataRequest) {
         return studentService.getStudentIntroduceData(dataRequest);
     }
+
+    @PostMapping("/getStudentResumeData")
+    @PreAuthorize("hasRole('STUDENT') or hasRole('ADMIN')")
+    public DataResponse getStudentResumeData(@Valid @RequestBody DataRequest dataRequest) {
+        return studentService.getStudentResumeData(dataRequest);
+    }
 }

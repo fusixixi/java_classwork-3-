@@ -41,7 +41,9 @@ public class StudentService {
     private final FamilyMemberRepository familyMemberRepository;
     private final SystemService systemService;
     private final ScoreRepository scoreRepository;
-    public StudentService(PersonRepository personRepository, StudentRepository studentRepository, UserRepository userRepository, UserTypeRepository userTypeRepository, PasswordEncoder encoder, FeeRepository feeRepository, FamilyMemberRepository familyMemberRepository, SystemService systemService, ScoreRepository scoreRepository) {
+    private final AttendanceRepository attendanceRepository;
+    private final InnovationAchievementRepository innovationAchievementRepository;
+    public StudentService(PersonRepository personRepository, StudentRepository studentRepository, UserRepository userRepository, UserTypeRepository userTypeRepository, PasswordEncoder encoder, FeeRepository feeRepository, FamilyMemberRepository familyMemberRepository, SystemService systemService, ScoreRepository scoreRepository, AttendanceRepository attendanceRepository, InnovationAchievementRepository innovationAchievementRepository) {
         this.personRepository = personRepository;
         this.studentRepository = studentRepository;
         this.userRepository = userRepository;
@@ -51,6 +53,8 @@ public class StudentService {
         this.familyMemberRepository = familyMemberRepository;
         this.systemService = systemService;
         this.scoreRepository = scoreRepository;
+        this.attendanceRepository = attendanceRepository;
+        this.innovationAchievementRepository = innovationAchievementRepository;
     }
 
     public Map<String,Object> getMapFromStudent(Student s) {
@@ -586,5 +590,100 @@ public class StudentService {
         data.put("markList", getStudentMarkList(sList));
         data.put("feeList", getStudentFeeList(s.getPersonId()));
         return CommonMethod.getReturnData(data);//将前端所需数据保留Map对象里，返还前端
+    }
+
+    public DataResponse getStudentResumeData(DataRequest dataRequest) {
+        Integer personId = dataRequest == null ? null : dataRequest.getInteger("personId");
+        Optional<Student> sOp;
+        if (personId == null || personId <= 0) {
+            sOp = getCurrentLoginStudent();
+        } else {
+            sOp = studentRepository.findById(personId);
+        }
+        if (sOp.isEmpty()) {
+            return CommonMethod.getReturnMessageError("学生不存在！");
+        }
+        Student student = sOp.get();
+        Integer currentPersonId = CommonMethod.getPersonId();
+        if (isStudentRole() && currentPersonId != null && !student.getPersonId().equals(currentPersonId)) {
+            return CommonMethod.getReturnMessageError("学生端仅可查看自己的简历信息");
+        }
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("info", getMapFromStudent(student));
+        data.put("scoreList", getStudentScoreList(scoreRepository.findByStudentPersonId(student.getPersonId())));
+        data.put("attendanceRateList", getStudentAttendanceRateList(student));
+        data.put("achievementList", getStudentAchievementList(student));
+        return CommonMethod.getReturnData(data);
+    }
+
+    private List<Map<String,Object>> getStudentAttendanceRateList(Student student) {
+        List<Attendance> attendanceList = attendanceRepository.findByStudent(student);
+        Map<Integer, Map<String, Object>> grouped = new LinkedHashMap<>();
+        for (Attendance attendance : attendanceList) {
+            if (attendance == null || attendance.getCourse() == null) {
+                continue;
+            }
+            Integer courseId = attendance.getCourse().getCourseId();
+            Map<String, Object> item = grouped.computeIfAbsent(courseId, key -> {
+                Map<String, Object> map = new HashMap<>();
+                map.put("courseNum", attendance.getCourse().getNum());
+                map.put("courseName", attendance.getCourse().getName());
+                map.put("presentCount", 0);
+                map.put("totalCount", 0);
+                return map;
+            });
+            item.put("totalCount", CommonMethod.getInteger(item, "totalCount") + 1);
+            if ("present".equals(attendance.getStatus())) {
+                item.put("presentCount", CommonMethod.getInteger(item, "presentCount") + 1);
+            }
+        }
+
+        List<Map<String, Object>> rates = new ArrayList<>();
+        for (Map<String, Object> item : grouped.values()) {
+            int present = CommonMethod.getInteger(item, "presentCount");
+            int total = CommonMethod.getInteger(item, "totalCount");
+            double rate = total == 0 ? 0 : present * 100.0 / total;
+            item.put("attendanceRate", String.format("%.2f%%", rate));
+            rates.add(item);
+        }
+        return rates;
+    }
+
+    private List<Map<String,Object>> getStudentAchievementList(Student student) {
+        List<InnovationAchievement> achievements = innovationAchievementRepository.findByStudent(student);
+        List<Map<String,Object>> list = new ArrayList<>();
+        for (InnovationAchievement achievement : achievements) {
+            if (achievement == null) {
+                continue;
+            }
+            Map<String,Object> map = new HashMap<>();
+            map.put("title", achievement.getTitle());
+            map.put("category", achievement.getCategory());
+            map.put("achievementDate", achievement.getAchievementDate() == null ? "" : achievement.getAchievementDate().toString());
+            map.put("state", achievement.getState());
+            map.put("stateName", getAchievementStateName(achievement.getState()));
+            list.add(map);
+        }
+        return list;
+    }
+
+    private String getAchievementStateName(Integer state) {
+        if (state == null) {
+            return "";
+        }
+        if (state == 1) {
+            return "待审批";
+        }
+        if (state == 2) {
+            return "审批中";
+        }
+        if (state == 3) {
+            return "已通过";
+        }
+        if (state == 4) {
+            return "已拒绝";
+        }
+        return state.toString();
     }
 }

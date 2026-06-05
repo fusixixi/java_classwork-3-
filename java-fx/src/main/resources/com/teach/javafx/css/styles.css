@@ -374,6 +374,39 @@
     -fx-border-width: 0 1 0 0;
 }
 
+.resume-root {
+    -fx-background-color: #ffffff;
+}
+
+.resume-header {
+    -fx-background-color: #f8fbff;
+    -fx-background-radius: 12;
+    -fx-border-color: #dbe4f3;
+    -fx-border-radius: 12;
+}
+
+.resume-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #1e3a8a;
+}
+
+.resume-subtitle {
+    -fx-text-fill: #475569;
+}
+
+.resume-photo-placeholder {
+    -fx-background-color: #2563eb;
+    -fx-background-radius: 10;
+}
+
+.resume-text {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #dbe4f3;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+}
+
 .content-tabs {
     -fx-background-color: transparent;
 }
