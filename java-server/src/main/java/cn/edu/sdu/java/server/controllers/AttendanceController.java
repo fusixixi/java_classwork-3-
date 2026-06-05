@@ -36,6 +36,8 @@ import java.util.ArrayList;
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class AttendanceController {
     private static final String ROLE_STUDENT = "ROLE_STUDENT";
+    private static final Integer[] EXPORT_COLUMN_WIDTHS = {8, 12, 12, 16, 14, 10, 24, 20};
+    private static final String[] EXPORT_TITLES = {"序号", "学生学号", "学生姓名", "课程名称", "考勤日期", "状态", "备注", "记录时间"};
 
     @Autowired
     private AttendanceService attendanceService;
@@ -200,38 +202,8 @@ public class AttendanceController {
             if (dataRequest == null) {
                 return CommonMethod.getReturnMessageError("缺少必要参数");
             }
-            Integer studentId = dataRequest.getInteger("studentId");
-            Integer courseId = dataRequest.getInteger("courseId");
-            if (studentId == null) {
-                String studentNum = dataRequest.getString("studentNum");
-                if (studentNum != null && !studentNum.isEmpty()) {
-                    Optional<Student> student = studentRepository.findByPersonNum(studentNum);
-                    if (student.isPresent()) {
-                        studentId = student.get().getPersonId();
-                    }
-                }
-            }
-            if (courseId == null) {
-                String courseNum = dataRequest.getString("courseNum");
-                if (courseNum != null && !courseNum.isEmpty()) {
-                    Optional<Course> course = courseRepository.findByNum(courseNum);
-                    if (course.isPresent()) {
-                        courseId = course.get().getCourseId();
-                    }
-                }
-            }
-            if (courseId == null) {
-                String courseName = dataRequest.getString("courseName");
-                if (courseName != null && !courseName.isEmpty()) {
-                    List<Course> courseList = courseRepository.findByName(courseName);
-                    if (courseList.size() > 1) {
-                        return CommonMethod.getReturnMessageError("存在同名课程，请改用课程编号");
-                    }
-                    if (courseList.size() == 1) {
-                        courseId = courseList.get(0).getCourseId();
-                    }
-                }
-            }
+            Integer studentId = resolveStudentId(dataRequest);
+            Integer courseId = resolveCourseId(dataRequest);
             if (isStudentRole()) {
                 Integer currentPersonId = CommonMethod.getPersonId();
                 if (studentId == null) {
@@ -344,31 +316,7 @@ public class AttendanceController {
     @PostMapping("/all")
     public DataResponse getAllAttendancePost(@RequestBody(required = false) DataRequest dataRequest) {
         try {
-            String studentNum = dataRequest == null ? null : dataRequest.getString("studentNum");
-            String studentName = dataRequest == null ? null : dataRequest.getString("studentName");
-            String courseName = dataRequest == null ? null : dataRequest.getString("courseName");
-            Integer currentPersonId = CommonMethod.getPersonId();
-            boolean studentRole = isStudentRole();
-            List<Attendance> attendances = attendanceService.getAllAttendance();
-            List<Map<String,Object>> dataList = new ArrayList<>();
-            for (Attendance attendance : attendances) {
-                if (attendance.getStudent() == null || attendance.getStudent().getPerson() == null || attendance.getCourse() == null) {
-                    continue;
-                }
-                if (studentRole && !attendance.getStudent().getPersonId().equals(currentPersonId)) {
-                    continue;
-                }
-                if (studentNum != null && !studentNum.isBlank() && !attendance.getStudent().getPerson().getNum().contains(studentNum)) {
-                    continue;
-                }
-                if (studentName != null && !studentName.isBlank() && !attendance.getStudent().getPerson().getName().contains(studentName)) {
-                    continue;
-                }
-                if (courseName != null && !courseName.isBlank() && !attendance.getCourse().getName().contains(courseName)) {
-                    continue;
-                }
-                dataList.add(toAttendanceMap(attendance));
-            }
+            List<Map<String,Object>> dataList = buildFilteredAttendanceData(dataRequest);
             return CommonMethod.getReturnData(dataList);
         } catch (Exception e) {
             return CommonMethod.getReturnMessageError("查询失败：" + e.getMessage());
@@ -382,63 +330,35 @@ public class AttendanceController {
     @PostMapping("/export")
     public ResponseEntity<StreamingResponseBody> exportAttendance(@RequestBody(required = false) DataRequest dataRequest) {
         try {
-            String studentNum = dataRequest == null ? null : dataRequest.getString("studentNum");
-            String studentName = dataRequest == null ? null : dataRequest.getString("studentName");
-            String courseName = dataRequest == null ? null : dataRequest.getString("courseName");
-            Integer currentPersonId = CommonMethod.getPersonId();
-            boolean studentRole = isStudentRole();
-
-            List<Attendance> attendances = attendanceService.getAllAttendance();
-            List<Map<String,Object>> dataList = new ArrayList<>();
-            for (Attendance attendance : attendances) {
-                if (attendance.getStudent() == null || attendance.getStudent().getPerson() == null || attendance.getCourse() == null) {
-                    continue;
-                }
-                if (studentRole && !attendance.getStudent().getPersonId().equals(currentPersonId)) {
-                    continue;
-                }
-                if (studentNum != null && !studentNum.isBlank() && !attendance.getStudent().getPerson().getNum().contains(studentNum)) {
-                    continue;
-                }
-                if (studentName != null && !studentName.isBlank() && !attendance.getStudent().getPerson().getName().contains(studentName)) {
-                    continue;
-                }
-                if (courseName != null && !courseName.isBlank() && !attendance.getCourse().getName().contains(courseName)) {
-                    continue;
-                }
-                dataList.add(toAttendanceMap(attendance));
-            }
-
-            Integer[] widths = {8, 12, 12, 16, 14, 10, 24, 20};
-            String[] titles = {"序号", "学生学号", "学生姓名", "课程名称", "考勤日期", "状态", "备注", "记录时间"};
+            List<Map<String,Object>> dataList = buildFilteredAttendanceData(dataRequest);
             XSSFWorkbook wb = new XSSFWorkbook();
             XSSFCellStyle style = CommonMethod.createCellStyle(wb, 11);
             XSSFSheet sheet = wb.createSheet("attendance");
-            for (int j = 0; j < widths.length; j++) {
-                sheet.setColumnWidth(j, widths[j] * 256);
+            for (int j = 0; j < EXPORT_COLUMN_WIDTHS.length; j++) {
+                sheet.setColumnWidth(j, EXPORT_COLUMN_WIDTHS[j] * 256);
             }
             XSSFRow row = sheet.createRow(0);
-            XSSFCell[] cell = new XSSFCell[widths.length];
-            for (int j = 0; j < widths.length; j++) {
-                cell[j] = row.createCell(j);
-                cell[j].setCellStyle(style);
-                cell[j].setCellValue(titles[j]);
+            XSSFCell[] cells = new XSSFCell[EXPORT_COLUMN_WIDTHS.length];
+            for (int j = 0; j < EXPORT_COLUMN_WIDTHS.length; j++) {
+                cells[j] = row.createCell(j);
+                cells[j].setCellStyle(style);
+                cells[j].setCellValue(EXPORT_TITLES[j]);
             }
             for (int i = 0; i < dataList.size(); i++) {
                 Map<String,Object> item = dataList.get(i);
                 row = sheet.createRow(i + 1);
-                for (int j = 0; j < widths.length; j++) {
-                    cell[j] = row.createCell(j);
-                    cell[j].setCellStyle(style);
+                for (int j = 0; j < EXPORT_COLUMN_WIDTHS.length; j++) {
+                    cells[j] = row.createCell(j);
+                    cells[j].setCellStyle(style);
                 }
-                cell[0].setCellValue(i + 1);
-                cell[1].setCellValue(CommonMethod.getString(item, "studentNum"));
-                cell[2].setCellValue(CommonMethod.getString(item, "studentName"));
-                cell[3].setCellValue(CommonMethod.getString(item, "courseName"));
-                cell[4].setCellValue(CommonMethod.getString(item, "attendanceDate"));
-                cell[5].setCellValue(CommonMethod.getString(item, "statusName"));
-                cell[6].setCellValue(CommonMethod.getString(item, "remark"));
-                cell[7].setCellValue(CommonMethod.getString(item, "recordTime"));
+                cells[0].setCellValue(i + 1);
+                cells[1].setCellValue(CommonMethod.getString(item, "studentNum"));
+                cells[2].setCellValue(CommonMethod.getString(item, "studentName"));
+                cells[3].setCellValue(CommonMethod.getString(item, "courseName"));
+                cells[4].setCellValue(CommonMethod.getString(item, "attendanceDate"));
+                cells[5].setCellValue(CommonMethod.getString(item, "statusName"));
+                cells[6].setCellValue(CommonMethod.getString(item, "remark"));
+                cells[7].setCellValue(CommonMethod.getString(item, "recordTime"));
             }
 
             StreamingResponseBody stream = wb::write;
@@ -476,6 +396,74 @@ public class AttendanceController {
             return "请假";
         }
         return status;
+    }
+
+    private List<Map<String,Object>> buildFilteredAttendanceData(DataRequest dataRequest) {
+        String studentNum = dataRequest == null ? null : dataRequest.getString("studentNum");
+        String studentName = dataRequest == null ? null : dataRequest.getString("studentName");
+        String courseName = dataRequest == null ? null : dataRequest.getString("courseName");
+        Integer currentPersonId = CommonMethod.getPersonId();
+        boolean studentRole = isStudentRole();
+        List<Attendance> attendances = attendanceService.getAllAttendance();
+        List<Map<String,Object>> dataList = new ArrayList<>();
+        for (Attendance attendance : attendances) {
+            if (attendance.getStudent() == null || attendance.getStudent().getPerson() == null || attendance.getCourse() == null) {
+                continue;
+            }
+            if (studentRole && !attendance.getStudent().getPersonId().equals(currentPersonId)) {
+                continue;
+            }
+            if (studentNum != null && !studentNum.isBlank() && !attendance.getStudent().getPerson().getNum().contains(studentNum)) {
+                continue;
+            }
+            if (studentName != null && !studentName.isBlank() && !attendance.getStudent().getPerson().getName().contains(studentName)) {
+                continue;
+            }
+            if (courseName != null && !courseName.isBlank() && !attendance.getCourse().getName().contains(courseName)) {
+                continue;
+            }
+            dataList.add(toAttendanceMap(attendance));
+        }
+        return dataList;
+    }
+
+    private Integer resolveStudentId(DataRequest dataRequest) {
+        Integer studentId = dataRequest.getInteger("studentId");
+        if (studentId != null) {
+            return studentId;
+        }
+        String studentNum = dataRequest.getString("studentNum");
+        if (studentNum == null || studentNum.isEmpty()) {
+            return null;
+        }
+        Optional<Student> student = studentRepository.findByPersonNum(studentNum);
+        return student.map(Student::getPersonId).orElse(null);
+    }
+
+    private Integer resolveCourseId(DataRequest dataRequest) {
+        Integer courseId = dataRequest.getInteger("courseId");
+        if (courseId != null) {
+            return courseId;
+        }
+        String courseNum = dataRequest.getString("courseNum");
+        if (courseNum != null && !courseNum.isEmpty()) {
+            Optional<Course> course = courseRepository.findByNum(courseNum);
+            if (course.isPresent()) {
+                return course.get().getCourseId();
+            }
+        }
+        String courseName = dataRequest.getString("courseName");
+        if (courseName == null || courseName.isEmpty()) {
+            return null;
+        }
+        List<Course> courseList = courseRepository.findByName(courseName);
+        if (courseList.size() > 1) {
+            throw new RuntimeException("存在同名课程，请改用课程编号");
+        }
+        if (courseList.size() == 1) {
+            return courseList.get(0).getCourseId();
+        }
+        return null;
     }
 
     private boolean isStudentRole() {

@@ -120,7 +120,8 @@ public class AttendanceController extends ToolController {
     }
 
     private void setupRolePermissions() {
-        boolean studentRole = isStudentRole();
+        JwtResponse jwt = AppStore.getJwt();
+        boolean studentRole = jwt != null && ROLE_STUDENT.equals(jwt.getRole());
         if (!studentRole) {
             return;
         }
@@ -135,7 +136,7 @@ public class AttendanceController extends ToolController {
         remarkField.setDisable(true);
         queryStudentNumField.setDisable(true);
         queryStudentNameField.setDisable(true);
-        queryStudentNumField.setText(AppStore.getJwt().getUsername());
+        queryStudentNumField.setText(jwt.getUsername());
         queryStudentNameField.setText("");
     }
 
