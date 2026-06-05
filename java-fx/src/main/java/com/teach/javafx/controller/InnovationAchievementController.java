@@ -139,11 +139,10 @@ public class InnovationAchievementController extends ToolController {
     }
 
     private void setupRolePermissions() {
-        JwtResponse jwt = AppStore.getJwt();
-        boolean studentRole = jwt != null && ROLE_STUDENT.equals(jwt.getRole());
-        if (!studentRole) {
+        if (!isStudentRole()) {
             return;
         }
+        JwtResponse jwt = AppStore.getJwt();
         queryStudentNumField.setDisable(true);
         queryStudentNumField.setText(jwt.getUsername());
         studentNumField.setDisable(true);

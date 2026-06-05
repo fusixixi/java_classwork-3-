@@ -250,11 +250,12 @@ public class CourseSelectionController {
             String studentName = dataRequest == null ? null : dataRequest.getString("studentName");
             List<CourseSelection> selections = courseSelectionService.getAllSelections();
             List<Map<String,Object>> dataList = new ArrayList<>();
+            boolean studentRole = isStudentRole();
             for (CourseSelection selection : selections) {
                 if (selection.getStudent() == null || selection.getStudent().getPerson() == null || selection.getCourse() == null) {
                     continue;
                 }
-                if (isStudentRole() && !selection.getStudent().getPersonId().equals(CommonMethod.getPersonId())) {
+                if (studentRole && !isCurrentStudentSelection(selection)) {
                     continue;
                 }
                 if (studentNum != null && !studentNum.isBlank() && !selection.getStudent().getPerson().getNum().contains(studentNum)) {

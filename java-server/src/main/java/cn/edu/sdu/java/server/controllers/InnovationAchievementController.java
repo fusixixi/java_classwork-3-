@@ -306,11 +306,12 @@ public class InnovationAchievementController {
             String title = dataRequest == null ? null : dataRequest.getString("title");
             List<InnovationAchievement> achievements = innovationAchievementService.getAllAchievements();
             List<Map<String,Object>> dataList = new ArrayList<>();
+            boolean studentRole = isStudentRole();
             for (InnovationAchievement achievement : achievements) {
-                if (achievement.getStudent() == null || achievement.getStudent().getPerson() == null) {
+                if (achievement == null || achievement.getStudent() == null || achievement.getStudent().getPerson() == null) {
                     continue;
                 }
-                if (isStudentRole() && !isCurrentStudentAchievement(achievement)) {
+                if (studentRole && !isCurrentStudentAchievement(achievement)) {
                     continue;
                 }
                 if (studentNum != null && !studentNum.isBlank() && !achievement.getStudent().getPerson().getNum().contains(studentNum)) {
